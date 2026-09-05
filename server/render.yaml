@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: krishinirnay-server
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DISEASE_MODEL_PATH
+        value: models/disease-v1.onnx

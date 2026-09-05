@@ -1,0 +1,11 @@
+<resources>
+    <!-- Light-only for Phase 1 (see plan §10 "Dark mode") — Material3.Light
+         parent, not DayNight, so the pre-Compose window frame never flips
+         dark even if the system theme does. Compose's own KrishiNirnayTheme
+         (core/designsystem/theme/Theme.kt) is what actually themes content. -->
+    <style name="Theme.KrishiNirnay" parent="Theme.Material3.Light.NoActionBar">
+        <item name="android:windowBackground">@color/window_background</item>
+        <item name="android:statusBarColor">@color/window_background</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>

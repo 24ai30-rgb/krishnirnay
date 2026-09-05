@@ -1,0 +1,40 @@
+# Android / Gradle
+*.iml
+.gradle/
+.kotlin/
+/local.properties
+.idea/
+.DS_Store
+build/
+/captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+app/release/
+app/debug/
+
+# Claude Code local session state
+.claude/
+
+# Android signing / secrets — never commit
+app/google-services.json
+*.jks
+*.keystore
+local.properties
+
+# Python / FastAPI
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Server secrets — never commit
+server/.env
+server/.env.*
+
+# Misc
+*.log
+.env

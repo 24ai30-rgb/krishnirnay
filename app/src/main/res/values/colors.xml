@@ -1,0 +1,7 @@
+<resources>
+    <!-- Used only by the pre-Compose window/launcher theme below — the
+         real design tokens live in core/designsystem/theme/Color.kt and
+         are what every Composable actually reads from. -->
+    <color name="window_background">#FAFAF7</color>
+    <color name="launcher_background">#E3F5E9</color>
+</resources>
