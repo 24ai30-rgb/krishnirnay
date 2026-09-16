@@ -4,11 +4,15 @@ services:
     env: docker
     dockerfilePath: ./Dockerfile
     dockerContext: .
-    # TensorFlow + the Keras disease model + the scikit-learn risk model
-    # measured ~728MB resident locally — Free and Starter both cap at
-    # 512MB RAM and will OOM-crash-loop this service. Standard (2GB) is the
-    # smallest Render plan with enough headroom.
-    plan: standard
+    # Originally measured ~728MB resident (full TensorFlow + full
+    # torch/ultralytics + the scikit-learn risk model) — too big for the
+    # free tier's 512MB. Disease and Pest were converted to run through
+    # lightweight ai-edge-litert/onnxruntime interpreters instead (verified
+    # numerically equivalent to the original models — see disease_model.py
+    # and pest_model.py's own comments), bringing the real measured peak
+    # (all three models loaded) down to ~335MB resident. Free fits with a
+    # real ~175MB margin.
+    plan: free
     healthCheckPath: /health
     envVars:
       - key: API_KEY

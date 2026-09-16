@@ -10,13 +10,25 @@ scikit-learn==1.7.2
 joblib==1.5.1
 pandas==2.3.2
 
-# ML — required for the Disease Detection Keras model (app/services/disease_ai)
-# and the duplicate loader in app/services/disease_model.py. Was missing
-# here entirely — the app only ever ran because these were installed
-# manually in the dev's own environment; any fresh install/deploy would
-# fail at import time with ModuleNotFoundError.
-tensorflow==2.21.0
+# ML — required for the Disease Detection model (app/services/disease_ai).
+# ai-edge-litert (not full tensorflow) runs the model converted to .tflite —
+# full TensorFlow alone costs ~300MB+ RAM just to import, which doesn't fit
+# a free-tier host's 512MB budget. See disease_model.py's own comment for
+# the conversion/equivalence details. Pillow was also missing here entirely
+# — the app only ever ran because it was installed manually in the dev's
+# own environment; any fresh install/deploy would have failed at import
+# time with ModuleNotFoundError.
+ai-edge-litert==2.2.0
 Pillow==12.3.0
+
+# ML — required for the Pest Detection model (app/services/pest_model.py).
+# onnxruntime (not ultralytics/torch) runs the model exported to ONNX, with
+# a hand-written YOLOv8 decode + NMS instead of ultralytics' own — full
+# torch is the same class of RAM problem as tensorflow was for Disease. See
+# pest_model.py's own comment for the export/equivalence verification.
+# ultralytics/torch were also missing here entirely — same
+# only-worked-locally gap as tensorflow/Pillow.
+onnxruntime==1.30.0
 
 # test-only
 pytest==8.3.3

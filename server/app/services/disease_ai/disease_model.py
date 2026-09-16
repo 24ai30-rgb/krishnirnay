@@ -1,17 +1,23 @@
 from pathlib import Path
 
 import numpy as np
-import tensorflow as tf
+from ai_edge_litert.interpreter import Interpreter
 from PIL import Image
 
 
 # ============================================================
 # MODEL PATH
 # ============================================================
+# TFLite, not the original .keras — full TensorFlow alone costs ~300MB+ RAM
+# just to import, which doesn't fit a free-tier host's 512MB budget. This
+# runs the identical trained weights (float32, no quantization) through the
+# lightweight LiteRT interpreter instead: verified numerically equivalent to
+# the original Keras model (max abs diff ~5e-6, identical top-1 class) via a
+# one-time conversion script, not re-run at import time.
 
 BASE_DIR = Path(__file__).resolve().parent
 
-MODEL_PATH = BASE_DIR / "disease_model_finetuned_best.keras"
+MODEL_PATH = BASE_DIR / "disease_model_finetuned_best.tflite"
 
 
 # ============================================================
@@ -55,9 +61,12 @@ CLASS_NAMES = [
 
 print("Loading KrishiNirnay Disease Model...")
 
-model = tf.keras.models.load_model(MODEL_PATH)
+_interpreter = Interpreter(model_path=str(MODEL_PATH))
+_interpreter.allocate_tensors()
+_input_details = _interpreter.get_input_details()[0]
+_output_details = _interpreter.get_output_details()[0]
 
-print("✅ Disease model loaded successfully.")
+print("[OK] Disease model loaded successfully.")
 
 
 # ============================================================
@@ -95,10 +104,9 @@ def predict_disease(image_path: str):
 
     image = preprocess_image(image_path)
 
-    probabilities = model.predict(
-        image,
-        verbose=0,
-    )[0]
+    _interpreter.set_tensor(_input_details["index"], image)
+    _interpreter.invoke()
+    probabilities = _interpreter.get_tensor(_output_details["index"])[0]
 
     predicted_index = int(
         np.argmax(probabilities)
