@@ -8,9 +8,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from app.config import get_settings
-from app.routers import chat, disease, health, pest, risk_fusion
-from app.services import gemini_proxy, model_registry
-from app.services.disease_model import DiseaseModel
+from app.routers import chat, disease, health, ivr, local_llm, market, pest, risk_fusion, weather
+from app.services import gemini_proxy
 
 
 # =========================================================
@@ -281,17 +280,17 @@ def stop_discovery_server():
 async def lifespan(app: FastAPI):
 
     # =====================================================
-    # LOAD MODELS
+    # LOADED MODELS (for /health only)
     # =====================================================
-
-    disease_model = DiseaseModel()
-
-    model_registry.set_disease_model(
-        disease_model
-    )
+    # The real Disease model is loaded once, lazily by
+    # app.services.disease_ai.disease_model at import time; it used to also
+    # be loaded a second time here via a separate DiseaseModel() instance
+    # (app.services.disease_model) whose only consumer was this list — i.e.
+    # the same ~21MB Keras model held in memory twice for no behavioral
+    # reason. Removed: this is just a version label, not a live handle.
 
     app.state.models_loaded = [
-        disease_model.model_version,
+        "disease-v1",
         "agricultural-risk-v1",
     ]
 
@@ -438,6 +437,22 @@ def create_app() -> FastAPI:
 
     app.include_router(
         risk_fusion.router
+    )
+
+    app.include_router(
+        weather.router
+    )
+
+    app.include_router(
+        market.router
+    )
+
+    app.include_router(
+        local_llm.router
+    )
+
+    app.include_router(
+        ivr.router
     )
 
 

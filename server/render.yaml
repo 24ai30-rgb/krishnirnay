@@ -4,12 +4,22 @@ services:
     env: docker
     dockerfilePath: ./Dockerfile
     dockerContext: .
-    plan: free
+    # TensorFlow + the Keras disease model + the scikit-learn risk model
+    # measured ~728MB resident locally — Free and Starter both cap at
+    # 512MB RAM and will OOM-crash-loop this service. Standard (2GB) is the
+    # smallest Render plan with enough headroom.
+    plan: standard
     healthCheckPath: /health
     envVars:
       - key: API_KEY
         sync: false
       - key: GEMINI_API_KEY
         sync: false
-      - key: DISEASE_MODEL_PATH
-        value: models/disease-v1.onnx
+      # Weather/Market honestly report 503 "unavailable" without these —
+      # they were missing from this file entirely, so a Blueprint deploy
+      # never prompted for them and both features would have silently
+      # stayed unavailable on the deployed server.
+      - key: WEATHER_API_KEY
+        sync: false
+      - key: DATA_GOV_API_KEY
+        sync: false
