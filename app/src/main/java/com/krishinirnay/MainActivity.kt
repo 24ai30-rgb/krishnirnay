@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.krishinirnay.core.data.repository.SettingsRepository
+import com.krishinirnay.core.designsystem.motion.rememberSystemMotionEnabled
 import com.krishinirnay.core.designsystem.theme.KrishiNirnayTheme
 import com.krishinirnay.navigation.KrishiNavGraph
 import dagger.hilt.android.AndroidEntryPoint
@@ -30,6 +31,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val themeMode by settingsRepository.themeMode.collectAsStateWithLifecycle()
             val darkTheme = themeMode.isDark(isSystemInDarkTheme())
+            val motionEnabled = rememberSystemMotionEnabled()
             // Status/nav bar icons follow the app's theme, not just the system's.
             DisposableEffect(darkTheme) {
                 val style = if (darkTheme) SystemBarStyle.dark(Color.TRANSPARENT)
@@ -37,7 +39,7 @@ class MainActivity : ComponentActivity() {
                 enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
                 onDispose {}
             }
-            KrishiNirnayTheme(darkTheme = darkTheme) {
+            KrishiNirnayTheme(darkTheme = darkTheme, motionEnabled = motionEnabled) {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     KrishiNavGraph(modifier = Modifier.fillMaxSize())
                 }
