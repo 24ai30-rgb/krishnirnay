@@ -2,47 +2,61 @@ package com.krishinirnay.core.designsystem.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Design tokens — see the project's UI/UX design system plan ("Modern
-// minimal" direction) for the rationale behind each value. Every
-// Composable should read colors through KrishiTheme.colors /
-// MaterialTheme.colorScheme, never these constants directly.
+// "Fresh Field" tokens — see docs/superpowers/specs/2026-10-08-ui-redesign-design.md.
+// Composables read these through MaterialTheme.colorScheme / KrishiTheme.colors only.
 
-val Primary = Color(0xFF1E7D44)
-val PrimaryDark = Color(0xFF145C32)
-val PrimaryContainer = Color(0xFFE3F5E9)
-
-// Secondary — a lighter, "fresh leaf" green, for accents that need to read
-// as "agricultural" but distinct from the primary brand green (e.g. subtle
-// section backgrounds, secondary CTAs). Never used for risk meaning.
-val Secondary = Color(0xFF5FA777)
-val SecondaryContainer = Color(0xFFDCEFE2)
-
-// Accent — warm harvest/golden tone, for highlight moments only (onboarding
-// progress, a featured recommendation, market "good price" highlight) —
-// never for risk/status meaning, which stays on the Risk* tokens below.
-val Accent = Color(0xFFD79A2C)
-val AccentContainer = Color(0xFFFBEAD0)
-
-// Info — calm blue, for neutral informational banners (e.g. "cached data"
-// notices) that are not warnings and not errors.
-val Info = Color(0xFF3B7EC2)
+// ---- Light ----
+val Primary = Color(0xFF0E5A34)
+val PrimaryDark = Color(0xFF0A4427)
+val PrimaryContainer = Color(0xFFDDF1E3)
+val HeroStart = Color(0xFF0E5A34)
+val HeroEnd = Color(0xFF1F8A4C)
+val Lime = Color(0xFFC6F36B)
+val OnLime = Color(0xFF0E3B22)
+val Secondary = Color(0xFF3F9B63)
+val SecondaryContainer = Color(0xFFE2F2E6)
+val Accent = Color(0xFFC98A12)
+val AccentContainer = Color(0xFFFAEBCB)
+val Info = Color(0xFF2F7BC4)
 val InfoContainer = Color(0xFFE1EDF9)
-
-val Background = Color(0xFFFAFAF7)
+val Background = Color(0xFFF6F8F3)
 val Surface = Color(0xFFFFFFFF)
-val SurfaceAlt = Color(0xFFF1F3EF)
+val SurfaceAlt = Color(0xFFEDF2E8)
+val TextPrimary = Color(0xFF0F2A1C)
+val TextSecondary = Color(0xFF4E6357)
+val BorderColor = Color(0xFFDDE5D7)
+val RiskLow = Color(0xFF1F9D57)
+val RiskLowContainer = Color(0xFFE1F4E8)
+val RiskMedium = Color(0xFFD9920B)
+val RiskMediumContainer = Color(0xFFFBEED5)
+val RiskHigh = Color(0xFFE5484D)
+val RiskHighContainer = Color(0xFFFCE4E4)
+val RiskUnknown = Color(0xFF8A968E)
+val RiskUnknownContainer = Color(0xFFECEFEA)
 
-val TextPrimary = Color(0xFF1A1F1C)
-val TextSecondary = Color(0xFF5B665F)
-val BorderColor = Color(0xFFE4E7E2)
-
-// Risk colors are always paired with an icon + text label in the UI —
-// never color alone. See RiskBadge in core/designsystem/components.
-val RiskLow = Color(0xFF2E9E5B)
-val RiskLowContainer = Color(0xFFE1F3E8)
-val RiskMedium = Color(0xFFE0A930)
-val RiskMediumContainer = Color(0xFFFBEFDA)
-val RiskHigh = Color(0xFFD64545)
-val RiskHighContainer = Color(0xFFFBE3E3)
-val RiskUnknown = Color(0xFF9CA3A0)
-val RiskUnknownContainer = Color(0xFFEDEFEC)
+// ---- Dark ----
+val DarkPrimary = Color(0xFF5FD08B)
+val DarkOnPrimary = Color(0xFF062213)
+val DarkPrimaryContainer = Color(0xFF14402A)
+val DarkHeroStart = Color(0xFF0E5A34)
+val DarkHeroEnd = Color(0xFF14703F)
+val DarkSecondary = Color(0xFF7FD6A0)
+val DarkSecondaryContainer = Color(0xFF173A28)
+val DarkAccent = Color(0xFFF2B84B)
+val DarkAccentContainer = Color(0xFF3A2C10)
+val DarkInfo = Color(0xFF6AB0F3)
+val DarkInfoContainer = Color(0xFF14283C)
+val DarkBackground = Color(0xFF0B1410)
+val DarkSurface = Color(0xFF13201A)
+val DarkSurfaceAlt = Color(0xFF1A2A22)
+val DarkTextPrimary = Color(0xFFE6F0E9)
+val DarkTextSecondary = Color(0xFF9FB3A6)
+val DarkBorderColor = Color(0xFF24362C)
+val DarkRiskLow = Color(0xFF4ADE80)
+val DarkRiskLowContainer = Color(0xFF16351F)
+val DarkRiskMedium = Color(0xFFFBBF24)
+val DarkRiskMediumContainer = Color(0xFF3A2E0E)
+val DarkRiskHigh = Color(0xFFFF6B6B)
+val DarkRiskHighContainer = Color(0xFF3D1A1A)
+val DarkRiskUnknown = Color(0xFF7C8B82)
+val DarkRiskUnknownContainer = Color(0xFF1F2924)
