@@ -376,7 +376,13 @@ private fun DecisionHero(
             overflow = TextOverflow.Ellipsis,
         )
         Spacer(Modifier.size(6.dp))
-        Text(decision, style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold, color = Color.White)
+        // Short decisions get the big display size; full-sentence ones step down so they never take 4+ lines.
+        Text(
+            text = decision,
+            style = if (decision.length <= 32) MaterialTheme.typography.displaySmall else MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+        )
         if (uiState.recommendation != null) {
             Spacer(Modifier.size(4.dp))
             Text(strings.textFor(uiState.timing), style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.9f))
@@ -464,8 +470,10 @@ private fun SensorGaugesCard(uiState: DashboardUiState, strings: AppStrings, onO
     val humidity = uiState.humidityPct.takeIf { hasReading }
     KnCard(modifier = modifier.fillMaxWidth(), onClick = onOpen) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            Text(strings.dashboardLiveSensors, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
-            StatusBadge(uiState.dataSourceStatus)
+            Text(strings.dashboardLiveSensors, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Spacer(Modifier.size(8.dp))
+            Spacer(Modifier.weight(1f))
+            StatusBadge(uiState.dataSourceStatus, Modifier.weight(1f, fill = false))
         }
         Spacer(Modifier.size(14.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
