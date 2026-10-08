@@ -64,13 +64,13 @@ fun KnTopBar(
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onBackground,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f).padding(start = 4.dp),
         )
-        IconButton(onClick = onSyncChipClick) {
+        TopBarIconButton(onClick = onSyncChipClick) {
             Box {
                 Icon(
                     imageVector = if (isOnline) Icons.Rounded.CloudQueue else Icons.Rounded.CloudOff,
@@ -87,15 +87,30 @@ fun KnTopBar(
             }
         }
         if (onAlertsClick != null) {
-            IconButton(onClick = onAlertsClick) {
+            TopBarIconButton(onClick = onAlertsClick) {
                 Icon(Icons.Rounded.Notifications, contentDescription = "Alerts", tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-        IconButton(onClick = onHelpClick) {
+        TopBarIconButton(onClick = onHelpClick) {
             Icon(Icons.Rounded.HelpOutline, contentDescription = "How KrishiNirnay works", tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        IconButton(onClick = onSettingsClick) {
+        TopBarIconButton(onClick = onSettingsClick) {
             Icon(Icons.Rounded.Settings, contentDescription = "Settings", tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
+}
+
+
+/** 40dp circular surface button used by every top bar — reads as a tappable chip, not a bare glyph. */
+@Composable
+internal fun TopBarIconButton(onClick: () -> Unit, content: @Composable () -> Unit) {
+    androidx.compose.material3.IconButton(
+        onClick = onClick,
+        modifier = Modifier
+            .padding(horizontal = 2.dp)
+            .size(40.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.surface),
+        content = content,
+    )
 }

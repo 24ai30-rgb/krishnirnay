@@ -1,5 +1,6 @@
 package com.krishinirnay.core.designsystem.components
 
+import com.krishinirnay.core.designsystem.motion.pulse
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -75,6 +76,7 @@ private fun RiskBadgeContent(level: RiskLevel, size: RiskBadgeSize) {
 
     Row(
         modifier = Modifier
+            .pulse(enabled = level == RiskLevel.HIGH)
             .clip(RoundedCornerShape(50))
             .background(style.containerColor)
             .padding(horizontal = horizontalPadding, vertical = verticalPadding),

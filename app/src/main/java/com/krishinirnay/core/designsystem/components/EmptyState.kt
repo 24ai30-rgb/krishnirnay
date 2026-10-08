@@ -1,5 +1,6 @@
 package com.krishinirnay.core.designsystem.components
 
+import com.krishinirnay.core.designsystem.motion.enterStagger
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,6 +31,7 @@ fun EmptyState(
 ) {
     Column(
         modifier = modifier
+            .enterStagger(0)
             .fillMaxWidth()
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -37,15 +39,15 @@ fun EmptyState(
     ) {
         androidx.compose.foundation.layout.Box(
             modifier = Modifier
-                .size(56.dp)
-                .background(KrishiTheme.colors.surfaceAlt, CircleShape),
+                .size(72.dp)
+                .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(26.dp),
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(32.dp),
             )
         }
         Text(

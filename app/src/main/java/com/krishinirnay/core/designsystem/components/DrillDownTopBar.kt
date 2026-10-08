@@ -35,17 +35,19 @@ fun DrillDownTopBar(
             // status bar's clock/icons on a real device.
             .windowInsetsPadding(WindowInsets.statusBars)
             .height(56.dp)
-            .padding(horizontal = 4.dp),
+            .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconButton(onClick = onBack) {
+        TopBarIconButton(onClick = onBack) {
             Icon(Icons.Rounded.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
         }
         Text(
             text = title,
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(start = 4.dp),
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+            modifier = Modifier.padding(start = 10.dp),
         )
     }
 }

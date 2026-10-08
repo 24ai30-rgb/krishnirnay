@@ -1,5 +1,9 @@
 package com.krishinirnay.core.designsystem.components
 
+import com.krishinirnay.core.designsystem.motion.pressScale
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.remember
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -44,12 +48,14 @@ fun KnButton(
     loading: Boolean = false,
     icon: ImageVector? = null,
 ) {
+    val source = remember { MutableInteractionSource() }
+    val pressModifier = modifier.pressScale(source)
     val content: @Composable () -> Unit = {
         if (loading) {
             CircularProgressIndicator(
                 modifier = Modifier.height(18.dp),
                 strokeWidth = 2.dp,
-                color = if (style == KnButtonStyle.Primary) Color.White else MaterialTheme.colorScheme.primary,
+                color = if (style == KnButtonStyle.Primary) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
             )
         } else {
             icon?.let {
@@ -64,11 +70,12 @@ fun KnButton(
         KnButtonStyle.Primary -> M3Button(
             onClick = onClick,
             enabled = enabled && !loading,
-            modifier = modifier.height(52.dp),
-            shape = MaterialTheme.shapes.small,
+            modifier = pressModifier.height(52.dp),
+            interactionSource = source,
+            shape = RoundedCornerShape(50),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = Color.White,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
             ),
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp, pressedElevation = 0.dp),
             contentPadding = PaddingValues(horizontal = 20.dp),
@@ -77,8 +84,9 @@ fun KnButton(
         KnButtonStyle.Secondary -> OutlinedButton(
             onClick = onClick,
             enabled = enabled && !loading,
-            modifier = modifier.height(52.dp),
-            shape = MaterialTheme.shapes.small,
+            modifier = pressModifier.height(52.dp),
+            interactionSource = source,
+            shape = RoundedCornerShape(50),
             border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary),
             colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary),
             contentPadding = PaddingValues(horizontal = 20.dp),
@@ -87,7 +95,8 @@ fun KnButton(
         KnButtonStyle.Text -> TextButton(
             onClick = onClick,
             enabled = enabled && !loading,
-            modifier = modifier,
+            modifier = pressModifier,
+            interactionSource = source,
             colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary),
         ) { content() }
     }

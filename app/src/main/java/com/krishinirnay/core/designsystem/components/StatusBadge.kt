@@ -1,5 +1,6 @@
 package com.krishinirnay.core.designsystem.components
 
+import com.krishinirnay.core.designsystem.motion.pulse
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -47,8 +48,8 @@ fun StatusBadge(status: DataSourceStatus, modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Box(modifier = Modifier.size(7.dp).clip(CircleShape).background(dotColor))
-        Text(text = label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Box(modifier = Modifier.size(7.dp).pulse(enabled = status == DataSourceStatus.LIVE).clip(CircleShape).background(dotColor))
+        Text(text = label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
     }
 }
 

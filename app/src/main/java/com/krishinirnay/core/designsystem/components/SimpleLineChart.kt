@@ -1,33 +1,37 @@
 package com.krishinirnay.core.designsystem.components
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.unit.dp
+import com.krishinirnay.core.designsystem.motion.KrishiMotion
+import com.krishinirnay.core.designsystem.motion.LocalMotionEnabled
 
-/**
- * Minimal hand-rolled line chart with a faint area fill and an
- * emphasized endpoint — used for Analytics' session-depth trend lines.
- * Not the Vico library named in the design plan: Vico's exact Compose
- * API for the pinned version couldn't be verified without a compiler in
- * this environment, and a multi-call charting-library integration
- * guessed wrong fails as a single hard-to-diagnose block. This is a
- * deliberate, documented substitution — swapping in real Vico later is
- * a good follow-up once it can be iterated on with real compiler
- * feedback.
- */
+/** Line + gradient area chart that draws itself left-to-right on first show. */
 @Composable
 fun SimpleLineChart(
     values: List<Float>,
     color: Color,
     modifier: Modifier = Modifier,
 ) {
+    val motion = LocalMotionEnabled.current
+    val reveal = remember { Animatable(if (motion) 0f else 1f) }
+    LaunchedEffect(motion) {
+        if (motion) reveal.animateTo(1f, tween(KrishiMotion.EMPHASIS * 2, easing = FastOutSlowInEasing)) else reveal.snapTo(1f)
+    }
     Canvas(modifier = modifier) {
         if (values.size < 2) return@Canvas
 
@@ -54,12 +58,14 @@ fun SimpleLineChart(
             close()
         }
 
-        drawPath(fillPath, color.copy(alpha = 0.12f))
-        drawPath(
-            path = linePath,
-            color = color,
-            style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round),
-        )
-        drawCircle(color = color, radius = 5.dp.toPx(), center = points.last())
+        clipRect(right = size.width * reveal.value) {
+            drawPath(fillPath, Brush.verticalGradient(listOf(color.copy(alpha = 0.25f), Color.Transparent)))
+            drawPath(
+                path = linePath,
+                color = color,
+                style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round),
+            )
+        }
+        if (reveal.value >= 1f) drawCircle(color = color, radius = 5.dp.toPx(), center = points.last())
     }
 }
