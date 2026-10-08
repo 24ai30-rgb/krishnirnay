@@ -15,6 +15,7 @@ datastore = "1.1.1"
 kotlinxSerializationJson = "1.7.3"
 kotlinxSerializationPlugin = "2.2.10"
 onnxruntime = "1.19.2"
+litertlm = "0.11.0"
 coil = "2.7.0"
 material = "1.12.0"
 retrofit = "2.11.0"
@@ -52,13 +53,14 @@ hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-com
 
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx" }
-firebase-database-ktx = { group = "com.google.firebase", name = "firebase-database-ktx" }
+firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx" }
 
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 
 onnxruntime-android = { group = "com.microsoft.onnxruntime", name = "onnxruntime-android", version.ref = "onnxruntime" }
+litertlm-android = { group = "com.google.ai.edge.litertlm", name = "litertlm-android", version.ref = "litertlm" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 androidx-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 

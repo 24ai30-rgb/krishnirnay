@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -48,14 +49,15 @@ import com.krishinirnay.core.designsystem.theme.KrishiTheme
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit,
+    onLoginSuccess: (needsOnboarding: Boolean) -> Unit,
+    onNavigateToRegister: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(uiState.isLoggedIn) {
-        if (uiState.isLoggedIn) onLoginSuccess()
+        if (uiState.isLoggedIn) onLoginSuccess(uiState.needsOnboarding)
     }
 
     LoginContent(
@@ -63,6 +65,8 @@ fun LoginScreen(
         onEmailChange = viewModel::onEmailChange,
         onPasswordChange = viewModel::onPasswordChange,
         onLoginClick = viewModel::login,
+        onForgotPasswordClick = viewModel::sendPasswordReset,
+        onCreateAccountClick = onNavigateToRegister,
         modifier = modifier,
     )
 }
@@ -73,6 +77,8 @@ private fun LoginContent(
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onLoginClick: () -> Unit,
+    onForgotPasswordClick: () -> Unit = {},
+    onCreateAccountClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val strings = LocalAppStrings.current
@@ -155,6 +161,18 @@ private fun LoginContent(
                 modifier = Modifier.fillMaxWidth(),
             )
 
+            Spacer(Modifier.height(4.dp))
+            TextButton(onClick = onForgotPasswordClick, modifier = Modifier.align(Alignment.End)) {
+                Text(strings.loginForgotPassword, style = MaterialTheme.typography.labelMedium)
+            }
+
+            if (uiState.resetEmailSent) {
+                Text(
+                    text = strings.loginResetEmailSent,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
             if (uiState.errorMessage != null) {
                 Spacer(Modifier.height(8.dp))
                 Text(
@@ -164,7 +182,7 @@ private fun LoginContent(
                 )
             }
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(12.dp))
             Button(
                 onClick = onLoginClick,
                 enabled = !uiState.isLoading,
@@ -196,6 +214,11 @@ private fun LoginContent(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                 )
+            }
+
+            Spacer(Modifier.height(8.dp))
+            TextButton(onClick = onCreateAccountClick) {
+                Text(strings.loginCreateAccount, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
             }
         }
     }

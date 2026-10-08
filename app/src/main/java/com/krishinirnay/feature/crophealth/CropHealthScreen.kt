@@ -146,6 +146,8 @@ fun CropHealthScreen(
                 item {
                     ProfessionalErrorCard(
                         message = uiState.errorMessage.orEmpty(),
+                        technicalDetail = uiState.technicalErrorDetail,
+                        onRetry = viewModel::retry,
                     )
                 }
 
@@ -718,7 +720,10 @@ private fun ProfessionalLoadingCard() {
 @Composable
 private fun ProfessionalErrorCard(
     message: String,
+    technicalDetail: String? = null,
+    onRetry: () -> Unit = {},
 ) {
+    var showTechnicalDetail by remember(technicalDetail) { mutableStateOf(false) }
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -726,35 +731,69 @@ private fun ProfessionalErrorCard(
         color = MaterialTheme.colorScheme.errorContainer,
     ) {
 
-        Row(
-            modifier = Modifier.padding(17.dp),
-            verticalAlignment = Alignment.Top,
-        ) {
+        Column(modifier = Modifier.padding(17.dp)) {
+            Row(verticalAlignment = Alignment.Top) {
 
-            Icon(
-                imageVector = Icons.Rounded.Warning,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.error,
-                modifier = Modifier.size(23.dp),
-            )
-
-            Spacer(Modifier.size(11.dp))
-
-            Column {
-
-                Text(
-                    text = "Unable to analyze",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onErrorContainer,
+                Icon(
+                    imageVector = Icons.Rounded.Warning,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(23.dp),
                 )
 
-                Spacer(Modifier.size(4.dp))
+                Spacer(Modifier.size(11.dp))
 
+                Column {
+
+                    Text(
+                        text = "Unable to analyze",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                    )
+
+                    Spacer(Modifier.size(4.dp))
+
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                    )
+                }
+            }
+
+            Spacer(Modifier.size(12.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Row(
+                    modifier = Modifier.clickable(onClick = onRetry),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        Icons.Rounded.Refresh,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(16.dp),
+                    )
+                    Spacer(Modifier.size(4.dp))
+                    Text("Retry", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.error)
+                }
+                // Developer-mode diagnostic — the real exception/IP detail,
+                // never shown by default to a normal farmer (Part 13).
+                if (technicalDetail != null) {
+                    Text(
+                        text = "Details",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.clickable { showTechnicalDetail = !showTechnicalDetail },
+                    )
+                }
+            }
+            if (showTechnicalDetail && technicalDetail != null) {
+                Spacer(Modifier.size(8.dp))
                 Text(
-                    text = message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    text = technicalDetail,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.7f),
                 )
             }
         }

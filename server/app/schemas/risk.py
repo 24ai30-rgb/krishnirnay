@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class RiskRequest(BaseModel):
@@ -12,6 +12,8 @@ class RiskRequest(BaseModel):
 
 
 class RiskResponse(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     risk_class: int
     confidence: float | None = None
     probabilities: dict[str, float]

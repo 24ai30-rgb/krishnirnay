@@ -30,6 +30,16 @@ class FirebaseAuthRepositoryImpl @Inject constructor(
         Unit
     }
 
+    override suspend fun register(email: String, password: String): Result<Unit> = runCatching {
+        firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+        Unit
+    }
+
+    override suspend fun sendPasswordResetEmail(email: String): Result<Unit> = runCatching {
+        firebaseAuth.sendPasswordResetEmail(email).await()
+        Unit
+    }
+
     override fun logout() {
         firebaseAuth.signOut()
     }

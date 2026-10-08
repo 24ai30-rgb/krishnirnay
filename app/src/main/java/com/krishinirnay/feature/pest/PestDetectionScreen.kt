@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,10 +25,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.krishinirnay.core.designsystem.components.DrillDownTopBar
 import java.io.File
 
 @Composable
 fun PestDetectionScreen(
+    onBack: () -> Unit,
     viewModel: PestDetectionViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
@@ -44,16 +48,19 @@ fun PestDetectionScreen(
             selectedUri = uri
         }
 
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background,
+        topBar = { DrillDownTopBar(title = "Pest Detection", onBack = onBack) },
+    ) { innerPadding ->
+
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .padding(innerPadding)
             .padding(20.dp),
         verticalArrangement = Arrangement.Center,
     ) {
-
-        Text(
-            text = "🐛 Pest Detection",
-        )
 
         Spacer(
             modifier = Modifier.height(20.dp),
@@ -174,5 +181,6 @@ fun PestDetectionScreen(
                 )
             }
         }
+    }
     }
 }

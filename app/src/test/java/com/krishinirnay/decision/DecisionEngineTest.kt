@@ -1,16 +1,27 @@
 package com.krishinirnay.decision
 
 import com.krishinirnay.core.data.model.DiseaseResult
+import com.krishinirnay.core.data.model.PestResult
 import com.krishinirnay.core.data.model.RiskLevel
 import com.krishinirnay.core.data.model.SensorReading
+import com.krishinirnay.core.data.model.MarketTrend
 import com.krishinirnay.core.decision.DecisionEngine
 import com.krishinirnay.core.decision.DecisionInput
+import com.krishinirnay.core.decision.MarketInsight
+import com.krishinirnay.core.decision.RainOutlook
 import com.krishinirnay.core.decision.ReasonOutcome
+import com.krishinirnay.core.decision.RecommendationOutcome
+import com.krishinirnay.core.decision.TimingOutcome
+import com.krishinirnay.core.decision.region.DefaultRuleSet
+import com.krishinirnay.core.decision.region.RegionCropRuleRegistry
+import com.krishinirnay.core.decision.region.VidarbhaCottonRules
 import com.krishinirnay.core.designsystem.strings.EnglishStrings
 import com.krishinirnay.core.designsystem.strings.textFor
+import com.krishinirnay.core.fertilizer.FertilizerRecommendation
 import com.krishinirnay.core.ml.IrrigationModelOutput
 import java.time.Instant
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -148,5 +159,200 @@ class DecisionEngineTest {
     fun `recommendation is never blank regardless of inputs`() {
         val output = DecisionEngine.evaluate(input())
         assertTrue(EnglishStrings.textFor(output.recommendation).isNotBlank())
+    }
+
+    // --- Pest Detection integration (Phase 2.9) ---
+
+    private fun pestResult(detected: Boolean, risk: RiskLevel) = PestResult(
+        detected = detected,
+        label = "aphid",
+        confidence = 0.8f,
+        riskLevel = risk,
+        modelVersion = "pest-v1",
+        scannedAt = Instant.EPOCH,
+    )
+
+    @Test
+    fun `pestRisk is UNKNOWN when no pest scan has been run`() {
+        val output = DecisionEngine.evaluate(input())
+        assertEquals(RiskLevel.UNKNOWN, output.pestRisk)
+    }
+
+    @Test
+    fun `a real pest scan drives overallRisk even when water and heat are healthy`() {
+        val output = DecisionEngine.evaluate(
+            DecisionInput(
+                sensors = sensors(soilMoisturePct = 60f, temperatureC = 25f),
+                modelOutput = null,
+                diseaseResult = null,
+                deviceOnline = true,
+                pestResult = pestResult(detected = true, risk = RiskLevel.HIGH),
+            ),
+        )
+        assertEquals(RiskLevel.HIGH, output.pestRisk)
+        assertEquals(RiskLevel.HIGH, output.overallRisk)
+        assertEquals(RecommendationOutcome.TreatPestDetected, output.recommendation)
+    }
+
+    @Test
+    fun `no pest detected is a real LOW assessment not UNKNOWN`() {
+        val output = DecisionEngine.evaluate(
+            DecisionInput(
+                sensors = sensors(),
+                modelOutput = null,
+                diseaseResult = null,
+                deviceOnline = true,
+                pestResult = pestResult(detected = false, risk = RiskLevel.LOW),
+            ),
+        )
+        assertEquals(RiskLevel.LOW, output.pestRisk)
+    }
+
+    // --- Region/crop rule layer (Phase 2.8) ---
+
+    @Test
+    fun `RegionCropRuleRegistry resolves Vidarbha plus Cotton to VidarbhaCottonRules`() {
+        assertEquals(VidarbhaCottonRules, RegionCropRuleRegistry.forRegionAndCrop("Vidarbha", "Cotton"))
+        // Case/whitespace-insensitive, since farmer-entered text won't always match exactly.
+        assertEquals(VidarbhaCottonRules, RegionCropRuleRegistry.forRegionAndCrop(" vidarbha ", "cotton"))
+    }
+
+    @Test
+    fun `an unmodeled region plus crop falls back to DefaultRuleSet`() {
+        assertEquals(DefaultRuleSet, RegionCropRuleRegistry.forRegionAndCrop("Punjab", "Wheat"))
+        assertEquals(DefaultRuleSet, RegionCropRuleRegistry.forRegionAndCrop(null, null))
+    }
+
+    @Test
+    fun `a pest at a vulnerable crop stage is escalated one level under VidarbhaCottonRules`() {
+        val input = DecisionInput(
+            sensors = sensors(),
+            modelOutput = null,
+            diseaseResult = null,
+            deviceOnline = true,
+            pestResult = pestResult(detected = true, risk = RiskLevel.MEDIUM),
+            cropStage = "Flowering",
+        )
+        val withRegionRules = DecisionEngine.evaluate(input, ruleSet = VidarbhaCottonRules)
+        val withoutRegionRules = DecisionEngine.evaluate(input, ruleSet = DefaultRuleSet)
+
+        assertEquals(RiskLevel.HIGH, withRegionRules.pestRisk)
+        assertEquals(RiskLevel.MEDIUM, withoutRegionRules.pestRisk)
+    }
+
+    @Test
+    fun `a pest outside the vulnerable stage is not escalated`() {
+        val output = DecisionEngine.evaluate(
+            DecisionInput(
+                sensors = sensors(),
+                modelOutput = null,
+                diseaseResult = null,
+                deviceOnline = true,
+                pestResult = pestResult(detected = true, risk = RiskLevel.MEDIUM),
+                cropStage = "Germination",
+            ),
+            ruleSet = VidarbhaCottonRules,
+        )
+        assertEquals(RiskLevel.MEDIUM, output.pestRisk)
+    }
+
+    // --- Disease x weather integration (Phase 2.9) ---
+
+    @Test
+    fun `disease risk is escalated when rain is expected soon under high humidity`() {
+        val diseaseResult = DiseaseResult(
+            label = "tomato_early_blight",
+            displayName = "Tomato — Early Blight",
+            confidence = 0.5f,
+            riskLevel = RiskLevel.MEDIUM,
+            modelVersion = "disease-v1",
+            scannedAt = Instant.EPOCH,
+        )
+        val humidInput = DecisionInput(
+            sensors = SensorReading(soilMoisturePct = 60f, temperatureC = 25f, humidityPct = 80f, timestamp = Instant.EPOCH),
+            modelOutput = null,
+            diseaseResult = diseaseResult,
+            deviceOnline = true,
+            rainOutlook = RainOutlook.RAIN_EXPECTED_SOON,
+        )
+        val dryInput = humidInput.copy(rainOutlook = RainOutlook.DRY)
+
+        assertEquals(RiskLevel.HIGH, DecisionEngine.evaluate(humidInput).cropHealthRisk)
+        assertEquals(RiskLevel.MEDIUM, DecisionEngine.evaluate(dryInput).cropHealthRisk)
+        assertTrue(DecisionEngine.evaluate(humidInput).reasons.contains(ReasonOutcome.RainExpectedSoon))
+    }
+
+    // --- Timing / expected benefit (Phase 2.7) ---
+
+    @Test
+    fun `timing is Immediate when overall risk is HIGH and NoActionNeeded when LOW`() {
+        val highRiskOutput = DecisionEngine.evaluate(input(soilMoisturePct = 5f))
+        val healthyOutput = DecisionEngine.evaluate(input())
+
+        assertEquals(TimingOutcome.Immediate, highRiskOutput.timing)
+        assertEquals(TimingOutcome.NoActionNeeded, healthyOutput.timing)
+    }
+
+    // --- Fertilizer fusion (Phase 4B) ---
+
+    // TEST 2: fertilizer recommendation reaches DecisionEngine (a real parameter it
+    // receives and places into the output) — computed by FertilizerAdvisor elsewhere
+    // (FieldDecisionResolver), never duplicated inside the engine itself.
+    @Test
+    fun `a fertilizer recommendation passed in is carried through to the output unchanged`() {
+        val recommendation = FertilizerRecommendation.NoActionNeeded
+        val output = DecisionEngine.evaluate(input(), fertilizerRecommendation = recommendation)
+        assertEquals(recommendation, output.fertilizerRecommendation)
+    }
+
+    @Test
+    fun `no fertilizer recommendation passed in leaves the field null, never invented`() {
+        val output = DecisionEngine.evaluate(input())
+        assertNull(output.fertilizerRecommendation)
+    }
+
+    @Test
+    fun `a fertilizer recommendation never influences overallRisk or recommendation`() {
+        val withoutFertilizer = DecisionEngine.evaluate(input(soilMoisturePct = 5f))
+        val withFertilizer = DecisionEngine.evaluate(
+            input(soilMoisturePct = 5f),
+            fertilizerRecommendation = FertilizerRecommendation.NoActionNeeded,
+        )
+
+        assertEquals(withoutFertilizer.overallRisk, withFertilizer.overallRisk)
+        assertEquals(withoutFertilizer.recommendation, withFertilizer.recommendation)
+    }
+
+    // --- Market fusion (Phase 4D) ---
+
+    @Test
+    fun `a market insight passed in is carried through to the output unchanged`() {
+        val insight = MarketInsight.PriceAvailable(
+            crop = "Cotton", market = "Akola APMC", modalPricePerQuintal = 7200f,
+            trend = MarketTrend.RISING, arrivalDate = "10/09/2026",
+        )
+        val output = DecisionEngine.evaluate(input(), marketInsight = insight)
+        assertEquals(insight, output.marketInsight)
+    }
+
+    @Test
+    fun `no market insight passed in leaves the field null, never invented`() {
+        val output = DecisionEngine.evaluate(input())
+        assertNull(output.marketInsight)
+    }
+
+    @Test
+    fun `a market insight never influences overallRisk or recommendation`() {
+        val withoutMarket = DecisionEngine.evaluate(input(soilMoisturePct = 5f))
+        val withMarket = DecisionEngine.evaluate(
+            input(soilMoisturePct = 5f),
+            marketInsight = MarketInsight.PriceAvailable(
+                crop = "Cotton", market = "Akola APMC", modalPricePerQuintal = 7200f,
+                trend = MarketTrend.RISING, arrivalDate = "10/09/2026",
+            ),
+        )
+
+        assertEquals(withoutMarket.overallRisk, withMarket.overallRisk)
+        assertEquals(withoutMarket.recommendation, withMarket.recommendation)
     }
 }

@@ -6,12 +6,15 @@ import com.krishinirnay.core.data.model.DecisionOutput
 import com.krishinirnay.core.data.model.DeviceStatus
 import com.krishinirnay.core.data.model.DiseaseResult
 import com.krishinirnay.core.data.model.FieldState
+import com.krishinirnay.core.data.model.PestResult
 import com.krishinirnay.core.data.model.RiskLevel
 import com.krishinirnay.core.data.model.SensorReading
 import com.krishinirnay.core.data.model.SyncStatus
 import com.krishinirnay.core.data.repository.FieldStateRepository
+import com.krishinirnay.core.data.repository.MockControls
 import com.krishinirnay.core.decision.RecommendationOutcome
 import com.krishinirnay.core.data.repository.SettingsRepository
+import com.krishinirnay.core.mock.SensorScenario
 import java.time.Instant
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -40,7 +43,7 @@ private fun fieldState(fieldId: String, source: AppMode, history: List<SensorRea
     dataSource = source,
 )
 
-private class FakeFieldStateRepository(initial: FieldState) : FieldStateRepository {
+private class FakeFieldStateRepository(initial: FieldState) : FieldStateRepository, MockControls {
     private val state = MutableStateFlow(initial)
     override val fieldState: StateFlow<FieldState> = state.asStateFlow()
     override val syncStatus: StateFlow<SyncStatus> =
@@ -54,6 +57,24 @@ private class FakeFieldStateRepository(initial: FieldState) : FieldStateReposito
     }
 
     override suspend fun recordDiseaseResult(result: DiseaseResult) = Unit
+    override suspend fun recordPestResult(result: PestResult) = Unit
+
+    // MockControls — tracked only, never asserted by the pre-existing tests above.
+    var irrigationTriggerCount = 0
+        private set
+    var scenarioApplied: SensorScenario? = null
+        private set
+
+    override fun triggerIrrigation() {
+        irrigationTriggerCount++
+    }
+
+    override fun triggerDeviceDisconnect() = Unit
+    override fun triggerDeviceReconnect() = Unit
+
+    override fun applySensorScenario(scenario: SensorScenario) {
+        scenarioApplied = scenario
+    }
 }
 
 private class FakeSettingsRepository(initialMode: AppMode) : SettingsRepository {
@@ -62,6 +83,8 @@ private class FakeSettingsRepository(initialMode: AppMode) : SettingsRepository 
     override val language: StateFlow<String> = MutableStateFlow("en").asStateFlow()
     override val hasSeenHowItWorks: StateFlow<Boolean> = MutableStateFlow(false).asStateFlow()
     override val lastSyncedAt: StateFlow<Instant?> = MutableStateFlow<Instant?>(null).asStateFlow()
+    override val cloudFallbackEnabled: StateFlow<Boolean> = MutableStateFlow(false).asStateFlow()
+    override val hasCompletedOnboarding: StateFlow<Boolean> = MutableStateFlow(false).asStateFlow()
 
     override suspend fun setAppMode(mode: AppMode) {
         this.mode.value = mode
@@ -70,6 +93,8 @@ private class FakeSettingsRepository(initialMode: AppMode) : SettingsRepository 
     override suspend fun setLanguage(languageTag: String) = Unit
     override suspend fun setHasSeenHowItWorks(seen: Boolean) = Unit
     override suspend fun setLastSyncedAt(instant: Instant) = Unit
+    override suspend fun setHasCompletedOnboarding(completed: Boolean) = Unit
+    override suspend fun setCloudFallbackEnabled(enabled: Boolean) = Unit
 }
 
 class DefaultFieldStateRepositoryTest {
@@ -131,4 +156,36 @@ class DefaultFieldStateRepositoryTest {
 
         assertEquals(0, repo.fieldState.value.history.size)
     }
+
+    // --- MockControls delegation (the fix: MockControls was previously unreachable
+    // through the one FieldStateRepository every screen actually injects) ---
+
+    @Test
+    fun `MockControls delegates to the mock source while Mock Mode is active`() = runTest(UnconfinedTestDispatcher()) {
+        val mock = FakeFieldStateRepository(fieldState("mock-1", AppMode.MOCK))
+        val live = FakeFieldStateRepository(fieldState("live-1", AppMode.LIVE))
+        val settings = FakeSettingsRepository(initialMode = AppMode.MOCK)
+        val repo = DefaultFieldStateRepository(mock, live, settings, backgroundScope)
+
+        (repo as MockControls).applySensorScenario(SensorScenario.DRY_SOIL)
+        repo.triggerIrrigation()
+
+        assertEquals(SensorScenario.DRY_SOIL, mock.scenarioApplied)
+        assertEquals(1, mock.irrigationTriggerCount)
+    }
+
+    @Test
+    fun `MockControls is a no-op while Live Mode is active, never simulating on real sensor data`() =
+        runTest(UnconfinedTestDispatcher()) {
+            val mock = FakeFieldStateRepository(fieldState("mock-1", AppMode.MOCK))
+            val live = FakeFieldStateRepository(fieldState("live-1", AppMode.LIVE))
+            val settings = FakeSettingsRepository(initialMode = AppMode.LIVE)
+            val repo = DefaultFieldStateRepository(mock, live, settings, backgroundScope)
+
+            (repo as MockControls).applySensorScenario(SensorScenario.DRY_SOIL)
+            repo.triggerIrrigation()
+
+            assertEquals(null, mock.scenarioApplied)
+            assertEquals(0, mock.irrigationTriggerCount)
+        }
 }

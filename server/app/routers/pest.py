@@ -1,6 +1,9 @@
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 
+from PIL import UnidentifiedImageError
+
 from app.core.security import verify_api_key
+from app.routers.disease import MAX_UPLOAD_BYTES
 
 router = APIRouter(
     prefix="/v1",
@@ -40,7 +43,16 @@ async def predict_pest(file: UploadFile = File(...)):
         )
 
     try:
-        image_bytes = await file.read()
+        image_bytes = await file.read(MAX_UPLOAD_BYTES + 1)
+
+        if len(image_bytes) > MAX_UPLOAD_BYTES:
+            raise HTTPException(
+                status_code=413,
+                detail={
+                    "error": "file_too_large",
+                    "message": "Image is too large (max 5 MB).",
+                },
+            )
 
         if not image_bytes:
             raise HTTPException(
@@ -61,6 +73,15 @@ async def predict_pest(file: UploadFile = File(...)):
 
     except HTTPException:
         raise
+
+    except UnidentifiedImageError:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "invalid_file",
+                "message": "Could not read the image. Please upload a JPEG or PNG photo.",
+            },
+        )
 
     except Exception as exc:
         print("PEST DETECTION ERROR:", repr(exc))

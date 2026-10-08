@@ -20,6 +20,12 @@ class SensorWalk(
     var value: Float = initialValue.coerceIn(min, max)
         private set
 
+    /** Immediate override for a developer-triggered scenario — unlike [step], this never
+     * gradually drifts; the farmer/tester sees the new value on the very next reading. */
+    fun jumpTo(newValue: Float) {
+        value = newValue.coerceIn(min, max)
+    }
+
     fun step(target: Float) {
         val towardTarget = (target - value) * MEAN_REVERSION_FRACTION
         val noise = (random.nextFloat() * 2f - 1f) * stepSize

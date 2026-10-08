@@ -33,10 +33,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.krishinirnay.core.data.model.GovtScheme
 import com.krishinirnay.core.designsystem.components.DrillDownTopBar
 import com.krishinirnay.core.designsystem.components.KnCard
 import com.krishinirnay.core.designsystem.strings.LocalAppStrings
+import com.krishinirnay.core.schemes.MatchedScheme
 
 @Composable
 fun SchemesScreen(
@@ -44,7 +44,7 @@ fun SchemesScreen(
     modifier: Modifier = Modifier,
     viewModel: SchemesViewModel = hiltViewModel(),
 ) {
-    val schemes by viewModel.schemes.collectAsStateWithLifecycle()
+    val matchedSchemes by viewModel.matchedSchemes.collectAsStateWithLifecycle()
     val strings = LocalAppStrings.current
 
     Scaffold(
@@ -64,15 +64,41 @@ fun SchemesScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            items(schemes, key = GovtScheme::id) { scheme ->
-                SchemeCard(scheme, strings.schemesViewDetails, strings.schemesHideDetails, strings.schemesEligibilityLabel)
+            if (matchedSchemes.isEmpty()) {
+                item {
+                    KnCard(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = strings.schemesUnavailable,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+            items(matchedSchemes, key = { it.scheme.id }) { matched ->
+                SchemeCard(
+                    matched,
+                    strings.schemesViewDetails,
+                    strings.schemesHideDetails,
+                    strings.schemesEligibilityLabel,
+                    strings.schemesWhyEligible,
+                    strings.schemesLastVerified,
+                )
             }
         }
     }
 }
 
 @Composable
-private fun SchemeCard(scheme: GovtScheme, viewDetailsLabel: String, hideDetailsLabel: String, eligibilityLabel: String) {
+private fun SchemeCard(
+    matched: MatchedScheme,
+    viewDetailsLabel: String,
+    hideDetailsLabel: String,
+    eligibilityLabel: String,
+    whyEligibleLabel: String,
+    lastVerifiedLabel: String,
+) {
+    val scheme = matched.scheme
     var expanded by remember { mutableStateOf(false) }
     KnCard(modifier = Modifier.fillMaxWidth().animateContentSize()) {
         Row(verticalAlignment = Alignment.Top) {
@@ -97,11 +123,33 @@ private fun SchemeCard(scheme: GovtScheme, viewDetailsLabel: String, hideDetails
         Text(scheme.benefit, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
         Spacer(Modifier.size(8.dp))
         Text(scheme.description, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.size(8.dp))
+        Text("$whyEligibleLabel ${matched.reasons.joinToString(" ")}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
         if (expanded) {
             Spacer(Modifier.size(12.dp))
             Text(eligibilityLabel, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.size(4.dp))
             Text(scheme.eligibility, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+            if (scheme.requiredDocuments.isNotEmpty()) {
+                Spacer(Modifier.size(8.dp))
+                Text(scheme.requiredDocuments.joinToString(", "), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+            }
+            if (scheme.applicationMethod.isNotBlank()) {
+                Spacer(Modifier.size(8.dp))
+                Text(scheme.applicationMethod, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+            }
+            if (scheme.officialSource.isNotBlank()) {
+                Spacer(Modifier.size(4.dp))
+                Text(scheme.officialSource, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            if (scheme.lastUpdated.isNotBlank()) {
+                Spacer(Modifier.size(4.dp))
+                Text(
+                    "$lastVerifiedLabel: ${scheme.lastUpdated}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
         Spacer(Modifier.size(12.dp))
         Button(

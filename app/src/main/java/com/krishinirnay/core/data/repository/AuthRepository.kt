@@ -12,5 +12,11 @@ interface AuthRepository {
     val currentUser: StateFlow<AuthUser?>
 
     suspend fun login(email: String, password: String): Result<Unit>
+
+    /** Creates a brand-new Firebase Auth account — the farmer profile document is created separately, see FarmerCloudProfileRepository. */
+    suspend fun register(email: String, password: String): Result<Unit>
+
+    suspend fun sendPasswordResetEmail(email: String): Result<Unit>
+
     fun logout()
 }

@@ -5,4 +5,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface WeatherRepository {
     val weather: StateFlow<WeatherState>
+
+    /** Re-fetch now (e.g. a pull-to-refresh gesture). No-op in Mock Mode. */
+    suspend fun refresh()
 }

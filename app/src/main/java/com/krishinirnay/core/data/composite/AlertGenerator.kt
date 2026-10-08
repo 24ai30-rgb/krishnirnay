@@ -100,6 +100,19 @@ class AlertGenerator @Inject constructor(
                 ),
             )
         }
+
+        val pestResult = state.pestResult
+        if (pestResult != null && pestResult.detected && pestResult.riskLevel == RiskLevel.HIGH && pestResult != previous.pestResult) {
+            appendAlert(
+                Alert(
+                    id = UUID.randomUUID().toString(),
+                    timestamp = pestResult.scannedAt,
+                    riskLevel = RiskLevel.HIGH,
+                    title = "Pest risk detected",
+                    message = "${pestResult.label ?: "A pest"} detected — ${(pestResult.confidence * 100).toInt()}% confidence",
+                ),
+            )
+        }
     }
 
     private fun appendAlert(alert: Alert) {

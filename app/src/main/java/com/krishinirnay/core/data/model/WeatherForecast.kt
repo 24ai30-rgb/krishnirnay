@@ -14,16 +14,33 @@ data class DayForecast(
     val condition: WeatherCondition,
     val highC: Int,
     val lowC: Int,
+    val rainChancePct: Int? = null,
+    val rainfallMm: Float? = null,
 )
 
-/** Mock-only for Phase 1 — no real weather API is wired up yet, see MockWeatherRepositoryImpl. */
+/**
+ * See [com.krishinirnay.core.data.repository.WeatherRepository] for how this is
+ * sourced (Mock Mode's static demo forecast, or a Live-Mode call to the server's
+ * `/v1/weather`, which itself is honestly UNAVAILABLE until a real provider is
+ * configured — never fabricated). [status] must always be checked before treating
+ * these numbers as fresh.
+ */
 data class WeatherState(
     val locationLabel: String,
     val currentTempC: Int,
+    val feelsLikeC: Int? = null,
     val condition: WeatherCondition,
+    val conditionIconUrl: String? = null,
     val windKph: Int,
+    val windDirection: String? = null,
     val humidityPct: Int,
+    val cloudPct: Int? = null,
+    val pressureMb: Float? = null,
+    val visibilityKm: Float? = null,
+    val uvIndex: Float? = null,
     val rainChancePct: Int,
     val rainInHoursLabel: String,
     val daily: List<DayForecast>,
+    val rainfallMm: Float? = null,
+    val status: DataSourceStatus = DataSourceStatus.MOCK,
 )

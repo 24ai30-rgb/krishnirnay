@@ -11,6 +11,23 @@ val Primary = Color(0xFF1E7D44)
 val PrimaryDark = Color(0xFF145C32)
 val PrimaryContainer = Color(0xFFE3F5E9)
 
+// Secondary — a lighter, "fresh leaf" green, for accents that need to read
+// as "agricultural" but distinct from the primary brand green (e.g. subtle
+// section backgrounds, secondary CTAs). Never used for risk meaning.
+val Secondary = Color(0xFF5FA777)
+val SecondaryContainer = Color(0xFFDCEFE2)
+
+// Accent — warm harvest/golden tone, for highlight moments only (onboarding
+// progress, a featured recommendation, market "good price" highlight) —
+// never for risk/status meaning, which stays on the Risk* tokens below.
+val Accent = Color(0xFFD79A2C)
+val AccentContainer = Color(0xFFFBEAD0)
+
+// Info — calm blue, for neutral informational banners (e.g. "cached data"
+// notices) that are not warnings and not errors.
+val Info = Color(0xFF3B7EC2)
+val InfoContainer = Color(0xFFE1EDF9)
+
 val Background = Color(0xFFFAFAF7)
 val Surface = Color(0xFFFFFFFF)
 val SurfaceAlt = Color(0xFFF1F3EF)

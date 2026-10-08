@@ -9,4 +9,6 @@ data class CropHealthUiState(
     val previewUri: Uri? = null,
     val result: DiseaseResult? = null,
     val errorMessage: String? = null,
+    /** Raw exception/IP detail for a developer-mode view only — never shown to a farmer directly. See CropHealthScanException. */
+    val technicalErrorDetail: String? = null,
 )

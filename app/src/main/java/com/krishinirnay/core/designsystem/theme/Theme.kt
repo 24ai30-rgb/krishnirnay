@@ -26,6 +26,12 @@ data class KrishiExtendedColors(
     val riskHighContainer: Color,
     val riskUnknown: Color,
     val riskUnknownContainer: Color,
+    val secondary: Color,
+    val secondaryContainer: Color,
+    val accent: Color,
+    val accentContainer: Color,
+    val info: Color,
+    val infoContainer: Color,
 )
 
 private val LightExtendedColors = KrishiExtendedColors(
@@ -38,6 +44,12 @@ private val LightExtendedColors = KrishiExtendedColors(
     riskHighContainer = RiskHighContainer,
     riskUnknown = RiskUnknown,
     riskUnknownContainer = RiskUnknownContainer,
+    secondary = Secondary,
+    secondaryContainer = SecondaryContainer,
+    accent = Accent,
+    accentContainer = AccentContainer,
+    info = Info,
+    infoContainer = InfoContainer,
 )
 
 private val LocalKrishiExtendedColors = staticCompositionLocalOf { LightExtendedColors }

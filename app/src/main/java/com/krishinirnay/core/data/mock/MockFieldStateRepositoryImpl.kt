@@ -2,12 +2,14 @@ package com.krishinirnay.core.data.mock
 
 import com.krishinirnay.core.common.ApplicationScope
 import com.krishinirnay.core.common.DispatcherProvider
+import com.krishinirnay.core.data.composite.FieldDecisionResolver
 import com.krishinirnay.core.data.local.FieldStateCache
 import com.krishinirnay.core.data.model.AppMode
 import com.krishinirnay.core.data.model.DecisionOutput
 import com.krishinirnay.core.data.model.DeviceStatus
 import com.krishinirnay.core.data.model.DiseaseResult
 import com.krishinirnay.core.data.model.FieldState
+import com.krishinirnay.core.data.model.PestResult
 import com.krishinirnay.core.data.model.RiskLevel
 import com.krishinirnay.core.data.model.SensorReading
 import com.krishinirnay.core.data.model.SyncStatus
@@ -15,9 +17,9 @@ import com.krishinirnay.core.data.repository.FieldStateRepository
 import com.krishinirnay.core.data.repository.MockControls
 import com.krishinirnay.core.data.repository.SettingsRepository
 import com.krishinirnay.core.decision.DecisionEngine
-import com.krishinirnay.core.decision.DecisionInput
 import com.krishinirnay.core.decision.RecommendationOutcome
 import com.krishinirnay.core.mock.NarrativeEngine
+import com.krishinirnay.core.mock.SensorScenario
 import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -40,6 +42,7 @@ class MockFieldStateRepositoryImpl @Inject constructor(
     private val dispatcherProvider: DispatcherProvider,
     private val fieldStateCache: FieldStateCache,
     private val settingsRepository: SettingsRepository,
+    private val fieldDecisionResolver: FieldDecisionResolver,
 ) : FieldStateRepository, MockControls {
 
     private val narrativeEngine = NarrativeEngine(dispatcherProvider = dispatcherProvider)
@@ -81,15 +84,28 @@ class MockFieldStateRepositoryImpl @Inject constructor(
 
     override suspend fun recordDiseaseResult(result: DiseaseResult) {
         val current = _fieldState.value
-        val decision = DecisionEngine.evaluate(
-            DecisionInput(
-                sensors = current.sensors,
-                modelOutput = null,
-                diseaseResult = result,
-                deviceOnline = current.deviceStatus.isOnline,
-            ),
+        val decision = fieldDecisionResolver.evaluate(
+            sensors = current.sensors,
+            modelOutput = null,
+            diseaseResult = result,
+            pestResult = current.pestResult,
+            deviceOnline = current.deviceStatus.isOnline,
         )
         val next = current.copy(diseaseResult = result, decision = decision)
+        _fieldState.value = next
+        fieldStateCache.save(next)
+    }
+
+    override suspend fun recordPestResult(result: PestResult) {
+        val current = _fieldState.value
+        val decision = fieldDecisionResolver.evaluate(
+            sensors = current.sensors,
+            modelOutput = null,
+            diseaseResult = current.diseaseResult,
+            pestResult = result,
+            deviceOnline = current.deviceStatus.isOnline,
+        )
+        val next = current.copy(pestResult = result, decision = decision)
         _fieldState.value = next
         fieldStateCache.save(next)
     }
@@ -97,16 +113,16 @@ class MockFieldStateRepositoryImpl @Inject constructor(
     override fun triggerIrrigation() = narrativeEngine.triggerIrrigation()
     override fun triggerDeviceDisconnect() = narrativeEngine.triggerDeviceDisconnect()
     override fun triggerDeviceReconnect() = narrativeEngine.triggerDeviceReconnect()
+    override fun applySensorScenario(scenario: SensorScenario) = narrativeEngine.applyScenario(scenario)
 
     private fun updateFieldState(sensors: SensorReading, online: Boolean) {
         val previous = _fieldState.value
-        val decision = DecisionEngine.evaluate(
-            DecisionInput(
-                sensors = sensors,
-                modelOutput = null, // Model 1 wiring lands with AI Insights/What-If
-                diseaseResult = previous.diseaseResult,
-                deviceOnline = online,
-            ),
+        val decision = fieldDecisionResolver.evaluate(
+            sensors = sensors,
+            modelOutput = null, // Model 1 wiring lands with AI Insights/What-If
+            diseaseResult = previous.diseaseResult,
+            pestResult = previous.pestResult,
+            deviceOnline = online,
         )
 
         val next = FieldState(
@@ -115,6 +131,7 @@ class MockFieldStateRepositoryImpl @Inject constructor(
             deviceStatus = DeviceStatus(isOnline = online, lastSeenAt = sensors.timestamp),
             decision = decision,
             diseaseResult = previous.diseaseResult,
+            pestResult = previous.pestResult,
             history = (previous.history + sensors).takeLast(HISTORY_LIMIT),
             dataSource = AppMode.MOCK,
         )

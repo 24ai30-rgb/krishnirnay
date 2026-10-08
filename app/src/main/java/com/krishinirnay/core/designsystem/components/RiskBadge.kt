@@ -92,6 +92,14 @@ private fun RiskBadgeContent(level: RiskLevel, size: RiskBadgeSize) {
             style = textStyle,
             color = style.contentColor,
             fontWeight = FontWeight.Bold,
+            // A pill shape doesn't suit multi-line text (e.g. "Not
+            // assessed" wrapping to 3 jagged lines in a narrow 3-across
+            // sub-risk row) — one ellipsized line always reads better than
+            // a broken pill. Callers are responsible for giving Hero-size
+            // badges enough real width that this never actually triggers
+            // (see FarmTodayCard's compact weather glance).
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
         )
     }
 }

@@ -34,11 +34,24 @@ class AppPreferences @Inject constructor(
         val LANGUAGE = stringPreferencesKey("language")
         val HAS_SEEN_HOW_IT_WORKS = booleanPreferencesKey("has_seen_how_it_works")
         val LAST_SYNCED_AT_MILLIS = longPreferencesKey("last_synced_at_millis")
+        val CLOUD_FALLBACK_ENABLED = booleanPreferencesKey("cloud_fallback_enabled")
+        val HAS_COMPLETED_ONBOARDING = booleanPreferencesKey("has_completed_onboarding")
     }
 
+    /**
+     * Defaults to [AppMode.LIVE] so a fresh install actually shows real weather
+     * and real mandi prices. It previously defaulted to [AppMode.MOCK], which
+     * meant every new farmer saw demo values (correctly badged MOCK, but still
+     * demo) until they found the Mock/Live toggle in Settings -> Advanced.
+     *
+     * Live Mode is safe as a default because it degrades honestly: when the
+     * server or a provider is unreachable, weather/market show CACHED or
+     * UNAVAILABLE rather than inventing numbers. Mock Mode is unchanged and
+     * still selectable for demos and for sensor simulation without hardware.
+     */
     override val appMode: StateFlow<AppMode> = dataStore.data
-        .map { prefs -> prefs[Keys.APP_MODE]?.let { raw -> runCatching { AppMode.valueOf(raw) }.getOrNull() } ?: AppMode.MOCK }
-        .stateIn(scope, SharingStarted.Eagerly, AppMode.MOCK)
+        .map { prefs -> prefs[Keys.APP_MODE]?.let { raw -> runCatching { AppMode.valueOf(raw) }.getOrNull() } ?: AppMode.LIVE }
+        .stateIn(scope, SharingStarted.Eagerly, AppMode.LIVE)
 
     override val language: StateFlow<String> = dataStore.data
         .map { it[Keys.LANGUAGE] ?: DEFAULT_LANGUAGE }
@@ -51,6 +64,14 @@ class AppPreferences @Inject constructor(
     override val lastSyncedAt: StateFlow<Instant?> = dataStore.data
         .map { prefs -> prefs[Keys.LAST_SYNCED_AT_MILLIS]?.let(Instant::ofEpochMilli) }
         .stateIn(scope, SharingStarted.Eagerly, null)
+
+    override val cloudFallbackEnabled: StateFlow<Boolean> = dataStore.data
+        .map { it[Keys.CLOUD_FALLBACK_ENABLED] ?: false }
+        .stateIn(scope, SharingStarted.Eagerly, false)
+
+    override val hasCompletedOnboarding: StateFlow<Boolean> = dataStore.data
+        .map { it[Keys.HAS_COMPLETED_ONBOARDING] ?: false }
+        .stateIn(scope, SharingStarted.Eagerly, false)
 
     override suspend fun setAppMode(mode: AppMode) {
         dataStore.edit { it[Keys.APP_MODE] = mode.name }
@@ -66,6 +87,14 @@ class AppPreferences @Inject constructor(
 
     override suspend fun setLastSyncedAt(instant: Instant) {
         dataStore.edit { it[Keys.LAST_SYNCED_AT_MILLIS] = instant.toEpochMilli() }
+    }
+
+    override suspend fun setCloudFallbackEnabled(enabled: Boolean) {
+        dataStore.edit { it[Keys.CLOUD_FALLBACK_ENABLED] = enabled }
+    }
+
+    override suspend fun setHasCompletedOnboarding(completed: Boolean) {
+        dataStore.edit { it[Keys.HAS_COMPLETED_ONBOARDING] = completed }
     }
 
     private companion object {

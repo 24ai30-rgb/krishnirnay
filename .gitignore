@@ -34,7 +34,18 @@ venv/
 # Server secrets — never commit
 server/.env
 server/.env.*
+!server/.env.example
+
+# On-device AI model — large (~500MB), license-gated, never committed. See
+# server/models/on_device/README.md for how a developer stages it locally.
+server/models/on_device/*.task
 
 # Misc
 *.log
 .env
+
+# Local debug captures (screenshots / UI dumps)
+/*.png
+/*_ui*.xml
+server/*.png
+nul

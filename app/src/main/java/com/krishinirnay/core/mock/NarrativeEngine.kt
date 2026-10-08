@@ -109,6 +109,22 @@ class NarrativeEngine(
         _deviceOnline.value = true
     }
 
+    /**
+     * Developer/tester-triggerable scenario — jumps all three sensor values
+     * immediately (see [SensorWalk.jumpTo]) rather than gradually drifting
+     * toward them, so the app can be demonstrated and tested end to end
+     * without physical ESP32 hardware. Resets the stage timer so the normal
+     * narrative doesn't immediately drift the reading away again.
+     */
+    fun applyScenario(scenario: SensorScenario, realNow: Instant = Instant.now()) {
+        val target = scenario.toTarget()
+        moistureWalk.jumpTo(target.moisturePct)
+        temperatureWalk.jumpTo(target.temperatureC)
+        humidityWalk.jumpTo(target.humidityPct)
+        stageStartSimTime = clock.simulatedNow(realNow)
+        _sensorReading.value = buildReading(realNow)
+    }
+
     private fun buildReading(realNow: Instant) = SensorReading(
         soilMoisturePct = moistureWalk.value,
         temperatureC = temperatureWalk.value,

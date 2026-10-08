@@ -4,8 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.krishinirnay.core.data.model.RiskLevel
 import com.krishinirnay.core.data.repository.FieldStateRepository
+import com.krishinirnay.core.data.repository.MarketRepository
+import com.krishinirnay.core.data.repository.ProfileRepository
+import com.krishinirnay.core.data.repository.SettingsRepository
+import com.krishinirnay.core.data.repository.WeatherRepository
 import com.krishinirnay.core.llm.ExplanationResult
 import com.krishinirnay.core.llm.ExplanationService
+import com.krishinirnay.core.llm.local.LocalLlmContextBuilder
+import com.krishinirnay.core.llm.local.LocalLlmRepository
+import com.krishinirnay.core.llm.local.LocalLlmResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlin.math.roundToInt
@@ -16,10 +23,26 @@ import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+/**
+ * Explanation polish is tried in order: (1) the Local LLM, grounded in the
+ * same real profile/weather/market/decision data as the Chatbot (Phase 4E),
+ * calling only this app's own server, never a cloud LLM; (2) cloud Gemini
+ * (ExplanationService) only if SettingsRepository.cloudFallbackEnabled is
+ * explicitly turned on (off by default) and the Local LLM didn't answer.
+ * Either way, the plain rule-based recommendation renders immediately and
+ * offline-safe — this only ever silently upgrades it, never blocks or shows
+ * an error.
+ */
 @HiltViewModel
 class AiInsightsViewModel @Inject constructor(
     private val fieldStateRepository: FieldStateRepository,
+    private val profileRepository: ProfileRepository,
+    private val weatherRepository: WeatherRepository,
+    private val marketRepository: MarketRepository,
+    private val settingsRepository: SettingsRepository,
     private val explanationService: ExplanationService,
+    private val localLlmRepository: LocalLlmRepository,
+    private val localLlmContextBuilder: LocalLlmContextBuilder,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(InsightsUiState())
@@ -44,17 +67,38 @@ class AiInsightsViewModel @Inject constructor(
             }
         }
 
-        // Only re-request an AI-polished explanation when the risk level
-        // itself actually changes — not on every sensor fluctuation —
-        // to avoid spamming the server on every Mock Mode tick.
+        // Only re-request a polished explanation when the risk level itself
+        // actually changes — not on every sensor fluctuation — to avoid
+        // spamming the server on every Mock Mode tick.
         viewModelScope.launch {
             fieldStateRepository.fieldState
                 .distinctUntilChangedBy { it.decision.overallRisk }
                 .collect { state ->
                     polishedForRisk = state.decision.overallRisk
-                    val result = explanationService.polish(state)
-                    if (result is ExplanationResult.Polished && polishedForRisk == state.decision.overallRisk) {
-                        _uiState.update { it.copy(polishedText = result.text, isPolished = true) }
+
+                    val context = localLlmContextBuilder.build(
+                        fieldState = state,
+                        profile = profileRepository.profile.value,
+                        weather = weatherRepository.weather.value,
+                        market = marketRepository.market.value,
+                        language = settingsRepository.language.value,
+                    )
+                    val localResult = localLlmRepository.ask(
+                        "Explain today's field status and recommendation simply.",
+                        context,
+                    )
+
+                    val polished = when {
+                        localResult is LocalLlmResult.Answered -> localResult.reply
+                        settingsRepository.cloudFallbackEnabled.value -> {
+                            val cloudResult = explanationService.polish(state)
+                            (cloudResult as? ExplanationResult.Polished)?.text
+                        }
+                        else -> null
+                    }
+
+                    if (polished != null && polishedForRisk == state.decision.overallRisk) {
+                        _uiState.update { it.copy(polishedText = polished, isPolished = true) }
                     }
                 }
         }

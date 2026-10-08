@@ -23,4 +23,15 @@ object DecisionRules {
     const val PH_LOW_RISK_MAX = 7.5f
     const val PH_MEDIUM_RISK_MIN = 5.5f
     const val PH_MEDIUM_RISK_MAX = 8.0f
+
+    // Disease/pest x weather integration (Phase 2). Damp, humid conditions with rain
+    // expected genuinely favor fungal/bacterial spread — a well-established agronomy
+    // fact, not a region-specific guess, so this lives here rather than in a
+    // RegionCropRuleSet override.
+    const val HUMIDITY_DISEASE_ESCALATION_AT_OR_ABOVE_PCT = 70f
+
+    // Weather -> RainOutlook (Phase 3A). A generic "more likely than not" cutoff on
+    // WeatherState.rainChancePct — not region-specific, so it lives here rather than
+    // in a RegionCropRuleSet override.
+    const val RAIN_EXPECTED_SOON_AT_OR_ABOVE_PCT = 60f
 }

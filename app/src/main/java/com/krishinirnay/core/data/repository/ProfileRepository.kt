@@ -5,4 +5,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface ProfileRepository {
     val profile: StateFlow<FarmerProfile>
+
+    /** Persists Farm Setup edits — see `com.krishinirnay.core.data.local.FarmerProfileRepositoryImpl`. */
+    suspend fun updateProfile(profile: FarmerProfile)
 }

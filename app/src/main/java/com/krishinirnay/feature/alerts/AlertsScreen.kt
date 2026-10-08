@@ -22,9 +22,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,39 +33,23 @@ import com.krishinirnay.core.data.model.Alert
 import com.krishinirnay.core.data.model.RiskLevel
 import com.krishinirnay.core.designsystem.components.EmptyState
 import com.krishinirnay.core.designsystem.components.KnCard
-import com.krishinirnay.core.designsystem.components.KnTopBar
+import com.krishinirnay.core.designsystem.components.DrillDownTopBar
 import com.krishinirnay.core.designsystem.strings.LocalAppStrings
 import com.krishinirnay.core.designsystem.theme.KrishiTheme
-import com.krishinirnay.feature.howitworks.HowItWorksDialog
 
 @Composable
 fun AlertsScreen(
-    onNavigateToOfflineMode: () -> Unit,
-    onNavigateToSettings: () -> Unit,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AlertsViewModel = hiltViewModel(),
 ) {
     val alerts by viewModel.alerts.collectAsStateWithLifecycle()
-    val isOnline by viewModel.isOnline.collectAsStateWithLifecycle()
     val strings = LocalAppStrings.current
-    var showHowItWorks by remember { mutableStateOf(false) }
-
-    if (showHowItWorks) {
-        HowItWorksDialog(onDismiss = { showHowItWorks = false })
-    }
 
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            KnTopBar(
-                title = strings.alertsTitle,
-                isOnline = isOnline,
-                onSyncChipClick = onNavigateToOfflineMode,
-                onHelpClick = { showHowItWorks = true },
-                onSettingsClick = onNavigateToSettings,
-            )
-        },
+        topBar = { DrillDownTopBar(title = strings.alertsTitle, onBack = onBack) },
     ) { innerPadding ->
         if (alerts.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {

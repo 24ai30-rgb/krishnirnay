@@ -9,10 +9,13 @@ import com.krishinirnay.core.data.model.DecisionOutput
 import com.krishinirnay.core.data.model.DeviceStatus
 import com.krishinirnay.core.data.model.DiseaseResult
 import com.krishinirnay.core.data.model.FieldState
+import com.krishinirnay.core.data.model.PestResult
 import com.krishinirnay.core.data.model.RiskLevel
 import com.krishinirnay.core.data.model.SensorReading
+import com.krishinirnay.core.decision.BenefitOutcome
 import com.krishinirnay.core.decision.ReasonOutcome
 import com.krishinirnay.core.decision.RecommendationOutcome
+import com.krishinirnay.core.decision.TimingOutcome
 import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -79,6 +82,16 @@ private data class CachedFieldStateDto(
     val diseaseModelVersion: String?,
     val diseaseScannedAtMillis: Long?,
     val dataSource: String,
+    // Added in Phase 2 — defaulted so a cache written by an older build still decodes.
+    val pestRisk: String = "UNKNOWN",
+    val timing: String = "NoActionNeeded",
+    val expectedBenefit: String = "Unknown",
+    val pestDetected: Boolean? = null,
+    val pestLabel: String? = null,
+    val pestConfidence: Float? = null,
+    val pestRiskLevel: String? = null,
+    val pestModelVersion: String? = null,
+    val pestScannedAtMillis: Long? = null,
 )
 
 /**
@@ -95,6 +108,7 @@ private data class CachedReasonDto(
     val confidencePct: Int? = null,
     val celsius: Float? = null,
     val diseaseName: String? = null,
+    val pestName: String? = null,
 )
 
 private fun RecommendationOutcome.toKey(): String = this::class.simpleName!!
@@ -108,7 +122,28 @@ private fun recommendationFromKey(key: String): RecommendationOutcome = when (ke
     "MonitorTemperature" -> RecommendationOutcome.MonitorTemperature
     "ReviewCropHealthModerate" -> RecommendationOutcome.ReviewCropHealthModerate
     "HealthyRange" -> RecommendationOutcome.HealthyRange
+    "TreatPestDetected" -> RecommendationOutcome.TreatPestDetected
+    "MonitorPestRisk" -> RecommendationOutcome.MonitorPestRisk
     else -> RecommendationOutcome.NotEnoughData
+}
+
+private fun TimingOutcome.toKey(): String = this::class.simpleName!!
+
+private fun timingFromKey(key: String): TimingOutcome = when (key) {
+    "Immediate" -> TimingOutcome.Immediate
+    "ThisEvening" -> TimingOutcome.ThisEvening
+    "Within24Hours" -> TimingOutcome.Within24Hours
+    "Within3Days" -> TimingOutcome.Within3Days
+    else -> TimingOutcome.NoActionNeeded
+}
+
+private fun BenefitOutcome.toKey(): String = this::class.simpleName!!
+
+private fun benefitFromKey(key: String): BenefitOutcome = when (key) {
+    "PreventCropLoss" -> BenefitOutcome.PreventCropLoss
+    "ImprovedYield" -> BenefitOutcome.ImprovedYield
+    "HealthyGrowthContinues" -> BenefitOutcome.HealthyGrowthContinues
+    else -> BenefitOutcome.Unknown
 }
 
 private fun ReasonOutcome.toDto(): CachedReasonDto = when (this) {
@@ -118,6 +153,9 @@ private fun ReasonOutcome.toDto(): CachedReasonDto = when (this) {
     ReasonOutcome.CropHealthNotAssessed -> CachedReasonDto(type = "CropHealthNotAssessed")
     is ReasonOutcome.CropHealthAssessed -> CachedReasonDto(type = "CropHealthAssessed", diseaseName = diseaseName, risk = risk.name)
     ReasonOutcome.DeviceOffline -> CachedReasonDto(type = "DeviceOffline")
+    ReasonOutcome.PestNotAssessed -> CachedReasonDto(type = "PestNotAssessed")
+    is ReasonOutcome.PestAssessed -> CachedReasonDto(type = "PestAssessed", pestName = pestName, risk = risk.name)
+    ReasonOutcome.RainExpectedSoon -> CachedReasonDto(type = "RainExpectedSoon")
 }
 
 private fun CachedReasonDto.toDomain(): ReasonOutcome = when (type) {
@@ -126,6 +164,9 @@ private fun CachedReasonDto.toDomain(): ReasonOutcome = when (type) {
     "Temperature" -> ReasonOutcome.Temperature(celsius!!, RiskLevel.valueOf(risk!!))
     "CropHealthAssessed" -> ReasonOutcome.CropHealthAssessed(diseaseName, RiskLevel.valueOf(risk!!))
     "DeviceOffline" -> ReasonOutcome.DeviceOffline
+    "PestAssessed" -> ReasonOutcome.PestAssessed(pestName, RiskLevel.valueOf(risk!!))
+    "RainExpectedSoon" -> ReasonOutcome.RainExpectedSoon
+    "PestNotAssessed" -> ReasonOutcome.PestNotAssessed
     else -> ReasonOutcome.CropHealthNotAssessed
 }
 
@@ -156,6 +197,15 @@ private fun FieldState.toDto() = CachedFieldStateDto(
     diseaseModelVersion = diseaseResult?.modelVersion,
     diseaseScannedAtMillis = diseaseResult?.scannedAt?.toEpochMilli(),
     dataSource = dataSource.name,
+    pestRisk = decision.pestRisk.name,
+    timing = decision.timing.toKey(),
+    expectedBenefit = decision.expectedBenefit.toKey(),
+    pestDetected = pestResult?.detected,
+    pestLabel = pestResult?.label,
+    pestConfidence = pestResult?.confidence,
+    pestRiskLevel = pestResult?.riskLevel?.name,
+    pestModelVersion = pestResult?.modelVersion,
+    pestScannedAtMillis = pestResult?.scannedAt?.toEpochMilli(),
 )
 
 private fun CachedFieldStateDto.toDomain() = FieldState(
@@ -183,6 +233,9 @@ private fun CachedFieldStateDto.toDomain() = FieldState(
         recommendation = recommendationFromKey(recommendation),
         confidence = confidence,
         reasons = reasons.map(CachedReasonDto::toDomain),
+        pestRisk = runCatching { RiskLevel.valueOf(pestRisk) }.getOrDefault(RiskLevel.UNKNOWN),
+        timing = timingFromKey(timing),
+        expectedBenefit = benefitFromKey(expectedBenefit),
     ),
     diseaseResult = if (diseaseLabel != null && diseaseDisplayName != null && diseaseConfidence != null &&
         diseaseRiskLevel != null && diseaseModelVersion != null && diseaseScannedAtMillis != null
@@ -194,6 +247,20 @@ private fun CachedFieldStateDto.toDomain() = FieldState(
             riskLevel = RiskLevel.valueOf(diseaseRiskLevel),
             modelVersion = diseaseModelVersion,
             scannedAt = Instant.ofEpochMilli(diseaseScannedAtMillis),
+        )
+    } else {
+        null
+    },
+    pestResult = if (pestDetected != null && pestConfidence != null && pestRiskLevel != null &&
+        pestModelVersion != null && pestScannedAtMillis != null
+    ) {
+        PestResult(
+            detected = pestDetected,
+            label = pestLabel,
+            confidence = pestConfidence,
+            riskLevel = RiskLevel.valueOf(pestRiskLevel),
+            modelVersion = pestModelVersion,
+            scannedAt = Instant.ofEpochMilli(pestScannedAtMillis),
         )
     } else {
         null

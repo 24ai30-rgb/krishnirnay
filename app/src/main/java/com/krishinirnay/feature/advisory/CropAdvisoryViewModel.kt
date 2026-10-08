@@ -8,6 +8,8 @@ import com.krishinirnay.core.data.repository.FieldStateRepository
 import com.krishinirnay.core.data.repository.SettingsRepository
 import com.krishinirnay.core.designsystem.strings.AppStrings
 import com.krishinirnay.core.designsystem.strings.appStringsFor
+import com.krishinirnay.core.designsystem.strings.textFor
+import com.krishinirnay.core.fertilizer.FertilizerRecommendation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,6 +23,11 @@ import kotlinx.coroutines.flow.stateIn
  * with the risk shown elsewhere. Purely a live projection of current sensor/decision state —
  * there's no user-owned completion state to track (these aren't tasks a farmer "finishes,"
  * they're guidance that changes on its own as conditions change).
+ *
+ * Phase 4B: the fertilizer task now reads [FieldState.decision]'s
+ * [com.krishinirnay.core.data.model.DecisionOutput.fertilizerRecommendation] — computed
+ * once, by [com.krishinirnay.core.data.composite.FieldDecisionResolver], not
+ * recomputed here. This ViewModel no longer needs `ProfileRepository` at all.
  */
 @HiltViewModel
 class CropAdvisoryViewModel @Inject constructor(
@@ -36,6 +43,11 @@ class CropAdvisoryViewModel @Inject constructor(
 }
 
 private fun FieldState.toAdvisoryUiState(strings: AppStrings): CropAdvisoryUiState {
+    // Absent only if this FieldState predates Phase 4B (e.g. a value restored from an
+    // older cache entry) — never invented, honestly falls back to "need more data."
+    val fertilizerRecommendation = decision.fertilizerRecommendation
+        ?: FertilizerRecommendation.InsufficientData(listOf("nitrogen", "phosphorus", "potassium"))
+
     val tasks = listOf(
         AdvisoryTask(
             type = AdvisoryTaskType.IRRIGATE,
@@ -47,7 +59,7 @@ private fun FieldState.toAdvisoryUiState(strings: AppStrings): CropAdvisoryUiSta
         ),
         AdvisoryTask(
             type = AdvisoryTaskType.PEST_CONTROL,
-            detail = if (decision.cropHealthRisk != RiskLevel.LOW) {
+            detail = if (decision.cropHealthRisk != RiskLevel.LOW || decision.pestRisk != RiskLevel.LOW) {
                 diseaseResult?.displayName?.let { String.format(strings.advisoryPestWithDiseaseTemplate, it) }
                     ?: strings.advisoryPestElevated
             } else {
@@ -56,7 +68,7 @@ private fun FieldState.toAdvisoryUiState(strings: AppStrings): CropAdvisoryUiSta
         ),
         AdvisoryTask(
             type = AdvisoryTaskType.FERTILIZER,
-            detail = strings.advisoryFertilizerDetail,
+            detail = strings.textFor(fertilizerRecommendation),
         ),
     )
     return CropAdvisoryUiState(

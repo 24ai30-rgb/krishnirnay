@@ -1,19 +1,19 @@
 package com.krishinirnay.core.data.network
 
 import com.krishinirnay.core.common.ApplicationScope
+import com.krishinirnay.core.data.composite.FieldDecisionResolver
 import com.krishinirnay.core.data.local.FieldStateCache
 import com.krishinirnay.core.data.model.AppMode
 import com.krishinirnay.core.data.model.DecisionOutput
 import com.krishinirnay.core.data.model.DeviceStatus
 import com.krishinirnay.core.data.model.DiseaseResult
 import com.krishinirnay.core.data.model.FieldState
+import com.krishinirnay.core.data.model.PestResult
 import com.krishinirnay.core.data.model.RiskLevel
 import com.krishinirnay.core.data.model.SensorReading
 import com.krishinirnay.core.data.model.SyncStatus
 import com.krishinirnay.core.data.repository.FieldStateRepository
 import com.krishinirnay.core.data.repository.SettingsRepository
-import com.krishinirnay.core.decision.DecisionEngine
-import com.krishinirnay.core.decision.DecisionInput
 import com.krishinirnay.core.decision.RecommendationOutcome
 import com.krishinirnay.core.network.SensorApiService
 import java.time.Instant
@@ -33,6 +33,7 @@ class LiveFieldStateRepositoryImpl @Inject constructor(
     private val sensorApiService: SensorApiService,
     private val fieldStateCache: FieldStateCache,
     private val settingsRepository: SettingsRepository,
+    private val fieldDecisionResolver: FieldDecisionResolver,
 ) : FieldStateRepository {
 
     private val _fieldState = MutableStateFlow(initialFieldState())
@@ -84,17 +85,38 @@ class LiveFieldStateRepositoryImpl @Inject constructor(
     ) {
         val current = _fieldState.value
 
-        val decision = DecisionEngine.evaluate(
-            DecisionInput(
-                sensors = current.sensors,
-                modelOutput = null,
-                diseaseResult = result,
-                deviceOnline = current.deviceStatus.isOnline,
-            ),
+        val decision = fieldDecisionResolver.evaluate(
+            sensors = current.sensors,
+            modelOutput = null,
+            diseaseResult = result,
+            pestResult = current.pestResult,
+            deviceOnline = current.deviceStatus.isOnline,
         )
 
         val next = current.copy(
             diseaseResult = result,
+            decision = decision,
+        )
+
+        _fieldState.value = next
+        fieldStateCache.save(next)
+    }
+
+    override suspend fun recordPestResult(
+        result: PestResult,
+    ) {
+        val current = _fieldState.value
+
+        val decision = fieldDecisionResolver.evaluate(
+            sensors = current.sensors,
+            modelOutput = null,
+            diseaseResult = current.diseaseResult,
+            pestResult = result,
+            deviceOnline = current.deviceStatus.isOnline,
+        )
+
+        val next = current.copy(
+            pestResult = result,
             decision = decision,
         )
 
@@ -133,13 +155,12 @@ class LiveFieldStateRepositoryImpl @Inject constructor(
 
             val previous = _fieldState.value
 
-            val decision = DecisionEngine.evaluate(
-                DecisionInput(
-                    sensors = sensors,
-                    modelOutput = null,
-                    diseaseResult = previous.diseaseResult,
-                    deviceOnline = true,
-                ),
+            val decision = fieldDecisionResolver.evaluate(
+                sensors = sensors,
+                modelOutput = null,
+                diseaseResult = previous.diseaseResult,
+                pestResult = previous.pestResult,
+                deviceOnline = true,
             )
 
             val next = FieldState(
@@ -151,6 +172,7 @@ class LiveFieldStateRepositoryImpl @Inject constructor(
                 ),
                 decision = decision,
                 diseaseResult = previous.diseaseResult,
+                pestResult = previous.pestResult,
                 history = (
                     previous.history + sensors
                 ).takeLast(HISTORY_LIMIT),
@@ -187,25 +209,27 @@ class LiveFieldStateRepositoryImpl @Inject constructor(
 
             /*
              * IMPORTANT:
-             * Do not overwrite the last valid sensor state.
-             * Keep the cached state available for the UI.
+             * Keep the last known sensor VALUES on screen — never blank
+             * them just because one poll failed. But do mark the
+             * connection itself offline/stale so the UI can honestly
+             * show CACHED instead of silently continuing to claim LIVE
+             * (see DataSourceStatus). Previously this branch echoed
+             * back `current.deviceStatus.isOnline` unchanged, so once a
+             * single poll had ever succeeded, `isOnline` stayed true
+             * forever even if the server/ESP32 went unreachable for the
+             * rest of the session — that was the "stale cache mistaken
+             * for live" bug.
              */
             val current = _fieldState.value
 
             _syncStatus.value = SyncStatus(
-                isOnline = current.deviceStatus.isOnline,
+                isOnline = false,
                 lastSyncedAt = current.deviceStatus.lastSeenAt,
                 source = AppMode.LIVE,
             )
 
-            /*
-             * Keep the last known device status instead of
-             * immediately forcing the dashboard to Offline.
-             *
-             * This prevents a temporary network/sensor request
-             * failure from destroying the last valid state.
-             */
             _fieldState.value = current.copy(
+                deviceStatus = current.deviceStatus.copy(isOnline = false),
                 dataSource = AppMode.LIVE,
             )
         }

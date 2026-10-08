@@ -35,4 +35,6 @@ class MockWeatherRepositoryImpl @Inject constructor() : WeatherRepository {
         ),
     )
     override val weather: StateFlow<WeatherState> = _weather.asStateFlow()
+
+    override suspend fun refresh() = Unit
 }

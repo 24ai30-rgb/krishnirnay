@@ -12,6 +12,7 @@ data class FieldState(
     val deviceStatus: DeviceStatus,
     val decision: DecisionOutput,
     val diseaseResult: DiseaseResult? = null,
+    val pestResult: PestResult? = null,
     /** Capped ring buffer for Analytics — session-depth only, see docs/architecture.md. */
     val history: List<SensorReading> = emptyList(),
     val dataSource: AppMode,

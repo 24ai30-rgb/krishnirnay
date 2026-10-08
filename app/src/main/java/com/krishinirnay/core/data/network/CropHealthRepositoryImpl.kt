@@ -16,7 +16,14 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Response
 
 
-class CropHealthScanException(message: String) : Exception(message)
+/**
+ * [message] is always farmer-safe (no IPs, hostnames, or raw exception
+ * text) — [technicalDetail], when present, is the real cause for a
+ * developer-mode/diagnostic view only (see ProfessionalErrorCard). Never
+ * shown to a normal farmer, per Part 13's "do not expose technical IP
+ * addresses to normal farmers."
+ */
+class CropHealthScanException(message: String, val technicalDetail: String? = null) : Exception(message)
 
 
 @Singleton
@@ -85,11 +92,13 @@ class CropHealthRepositoryImpl @Inject constructor(
             )
 
             throw CropHealthScanException(
-                "Cannot connect to FastAPI server.\n\n" +
+                message = "AI server is unavailable. Please check your connection and try again.",
+                technicalDetail = "${error::class.simpleName}: ${error.message}\n\n" +
                     "Check:\n" +
                     "1. Uvicorn is running\n" +
-                    "2. adb reverse is active\n" +
-                    "3. FastAPI is running on port 8000",
+                    "2. adb reverse tcp:8000 tcp:8000 is active (physical device), " +
+                    "or the app's base URL matches your LAN IP\n" +
+                    "3. FastAPI is listening on port 8000",
             )
         }
 
@@ -246,11 +255,22 @@ private fun DiseaseResponseDto.toDomain(): DiseaseResult {
         "Normalized confidence = $normalizedConfidence",
     )
 
+    // The server's real /v1/predict/disease response has no risk_level field (see
+    // KRISHINIRNAY_IMPLEMENTATION_PLAN.md, finding B6) — it must be derived here from
+    // `status` + confidence, not left UNKNOWN. Previously this was hardcoded to
+    // RiskLevel.UNKNOWN, which meant a real disease scan never affected crop-health
+    // risk or DecisionEngine's overall risk at all.
+    val riskLevel = when {
+        status.contains("HEALTHY", ignoreCase = true) -> RiskLevel.LOW
+        normalizedConfidence >= 0.6f -> RiskLevel.HIGH
+        else -> RiskLevel.MEDIUM
+    }
+
     return DiseaseResult(
         label = prediction,
         displayName = displayName,
         confidence = normalizedConfidence,
-        riskLevel = RiskLevel.UNKNOWN,
+        riskLevel = riskLevel,
         modelVersion = "disease-v1",
         scannedAt = Instant.now(),
     )

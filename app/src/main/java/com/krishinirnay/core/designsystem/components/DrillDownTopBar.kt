@@ -1,9 +1,12 @@
 package com.krishinirnay.core.designsystem.components
 
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material3.Icon
@@ -25,6 +28,12 @@ fun DrillDownTopBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            // The app draws edge-to-edge (see MainActivity's
+            // enableEdgeToEdge()) and this custom bar, unlike a real M3
+            // TopAppBar, doesn't get the status-bar inset applied for free
+            // — without this the back arrow/title rendered up under the
+            // status bar's clock/icons on a real device.
+            .windowInsetsPadding(WindowInsets.statusBars)
             .height(56.dp)
             .padding(horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically,

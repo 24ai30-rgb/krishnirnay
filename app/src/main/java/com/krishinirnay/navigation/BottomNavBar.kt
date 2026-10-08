@@ -1,9 +1,9 @@
 package com.krishinirnay.navigation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.CameraAlt
 import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Spa
 import androidx.compose.material3.Icon
@@ -85,8 +85,8 @@ private fun iconFor(destination: Destination): ImageVector =
         Destination.CropHealth ->
             Icons.Rounded.CameraAlt
 
-        Destination.Alerts ->
-            Icons.Rounded.Notifications
+        Destination.Chatbot ->
+            Icons.Rounded.AutoAwesome
 
         Destination.Profile ->
             Icons.Rounded.Person
@@ -110,8 +110,8 @@ private fun labelFor(
         Destination.CropHealth ->
             strings.diseaseDetectionTitle
 
-        Destination.Alerts ->
-            strings.navAlerts
+        Destination.Chatbot ->
+            strings.navAssistant
 
         Destination.Profile ->
             strings.navProfile

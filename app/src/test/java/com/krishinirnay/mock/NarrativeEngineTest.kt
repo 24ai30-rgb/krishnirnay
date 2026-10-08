@@ -1,8 +1,10 @@
 package com.krishinirnay.mock
 
 import com.krishinirnay.core.common.DispatcherProvider
+import com.krishinirnay.core.decision.DecisionRules
 import com.krishinirnay.core.mock.NarrativeEngine
 import com.krishinirnay.core.mock.ScenarioStage
+import com.krishinirnay.core.mock.SensorScenario
 import java.time.Instant
 import kotlinx.coroutines.Dispatchers
 import org.junit.Assert.assertEquals
@@ -83,5 +85,51 @@ class NarrativeEngineTest {
 
         engine.triggerDeviceReconnect()
         assertTrue(engine.deviceOnline.value)
+    }
+
+    // --- Sensor scenario simulation (testing without physical ESP32 hardware) ---
+
+    @Test
+    fun `DRY_SOIL scenario applies immediately and crosses the real HIGH water-stress threshold`() {
+        val engine = NarrativeEngine(dispatcherProvider = fakeDispatcherProvider, seed = 1L)
+        engine.applyScenario(SensorScenario.DRY_SOIL)
+        assertTrue(engine.sensorReading.value.soilMoisturePct < DecisionRules.SOIL_MOISTURE_HIGH_RISK_BELOW_PCT)
+    }
+
+    @Test
+    fun `WET_SOIL scenario applies immediately and stays well above the HIGH water-stress threshold`() {
+        val engine = NarrativeEngine(dispatcherProvider = fakeDispatcherProvider, seed = 1L)
+        engine.applyScenario(SensorScenario.WET_SOIL)
+        assertTrue(engine.sensorReading.value.soilMoisturePct > DecisionRules.SOIL_MOISTURE_MEDIUM_RISK_BELOW_PCT)
+    }
+
+    @Test
+    fun `HIGH_TEMPERATURE scenario crosses the real HIGH heat-risk threshold`() {
+        val engine = NarrativeEngine(dispatcherProvider = fakeDispatcherProvider, seed = 1L)
+        engine.applyScenario(SensorScenario.HIGH_TEMPERATURE)
+        assertTrue(engine.sensorReading.value.temperatureC >= DecisionRules.TEMPERATURE_HIGH_RISK_AT_OR_ABOVE_C)
+    }
+
+    @Test
+    fun `LOW_TEMPERATURE scenario stays well below any heat-risk threshold`() {
+        val engine = NarrativeEngine(dispatcherProvider = fakeDispatcherProvider, seed = 1L)
+        engine.applyScenario(SensorScenario.LOW_TEMPERATURE)
+        assertTrue(engine.sensorReading.value.temperatureC < DecisionRules.TEMPERATURE_MEDIUM_RISK_AT_OR_ABOVE_C)
+    }
+
+    @Test
+    fun `HIGH_HUMIDITY scenario crosses the real disease-escalation humidity threshold`() {
+        val engine = NarrativeEngine(dispatcherProvider = fakeDispatcherProvider, seed = 1L)
+        engine.applyScenario(SensorScenario.HIGH_HUMIDITY)
+        assertTrue(engine.sensorReading.value.humidityPct >= DecisionRules.HUMIDITY_DISEASE_ESCALATION_AT_OR_ABOVE_PCT)
+    }
+
+    @Test
+    fun `applying a scenario is an immediate jump, never a gradual drift`() {
+        val engine = NarrativeEngine(dispatcherProvider = fakeDispatcherProvider, seed = 1L)
+        engine.tick(Instant.now()) // establish a baseline reading via the normal walk
+        engine.applyScenario(SensorScenario.DRY_SOIL)
+        // No further tick() was called — the jump must already be visible.
+        assertTrue(engine.sensorReading.value.soilMoisturePct < DecisionRules.SOIL_MOISTURE_HIGH_RISK_BELOW_PCT)
     }
 }

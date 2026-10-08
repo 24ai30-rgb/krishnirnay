@@ -1,3 +1,38 @@
+import java.util.Properties
+
+/**
+ * Where the Android app looks for the FastAPI server.
+ *
+ * The committed default (127.0.0.1) is correct for a *physical device* bridged
+ * with `adb reverse tcp:8000 tcp:8000`, but it is wrong in two other common
+ * setups, and both must be overridden per machine in `local.properties`
+ * (gitignored, never committed) rather than by editing this default:
+ *
+ *   - Emulator: 127.0.0.1 there means the emulator's own loopback, not the
+ *     host — use the special host-loopback address instead:
+ *         krishinirnay.serverBaseUrl=http://10.0.2.2:8000/
+ *
+ *   - Physical device over Wi-Fi, *without* `adb reverse` active (adb reverse
+ *     silently drops on USB disconnect/reconnect, device reboot, or `adb
+ *     kill-server` — when that happens 127.0.0.1 from the device means the
+ *     device itself, not this PC, and every request fails to connect):
+ *     use this machine's actual LAN IP (`ipconfig` -> IPv4 Address) instead,
+ *     e.g.:
+ *         krishinirnay.serverBaseUrl=http://10.212.224.148:8000/
+ *     This requires the FastAPI server to bind 0.0.0.0 (not 127.0.0.1) and
+ *     the PC's firewall to allow inbound TCP on port 8000 from the LAN.
+ */
+val localProps = Properties().apply {
+    rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use(::load)
+}
+
+val serverBaseUrl: String = localProps.getProperty("krishinirnay.serverBaseUrl") ?: "http://127.0.0.1:8000/"
+
+// Must match the server's API_KEY env var. A deployed server (render.yaml)
+// sets a real key, so override per machine in local.properties:
+//     krishinirnay.serverApiKey=<same value as the server's API_KEY>
+val serverApiKey: String = localProps.getProperty("krishinirnay.serverApiKey") ?: "dev-only-change-me"
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -27,25 +62,28 @@ android {
         // LOCAL FASTAPI SERVER
         // ============================================================
         //
-        // Android phone -> ADB reverse -> PC FastAPI
+        // Physical device (default): ADB reverse -> PC FastAPI
+        //     adb reverse tcp:8000 tcp:8000
+        //     -> 127.0.0.1:8000 works
         //
-        // Run on PC:
-        // adb reverse tcp:8000 tcp:8000
+        // Emulator: 127.0.0.1 is the EMULATOR's loopback, not the PC.
+        //     Put this in local.properties instead:
+        //     krishinirnay.serverBaseUrl=http://10.0.2.2:8000/
         //
-        // Therefore Android uses 127.0.0.1:8000
+        // See `serverBaseUrl` at the top of this file.
         // ============================================================
 
         buildConfigField(
             "String",
             "SERVER_BASE_URL",
-            "\"http://127.0.0.1:8000/\""
+            "\"$serverBaseUrl\""
         )
 
-        // Must match FastAPI API key
+        // Must match FastAPI API key — see `serverApiKey` at the top of this file.
         buildConfigField(
             "String",
             "SERVER_API_KEY",
-            "\"dev-only-change-me\""
+            "\"$serverApiKey\""
         )
     }
 
@@ -78,6 +116,14 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    // Repositories under test (e.g. LiveFieldStateRepositoryImpl) call
+    // android.util.Log directly; without this, any unmocked android.jar
+    // call throws in a plain local unit test instead of returning a
+    // default value.
+    testOptions {
+        unitTests.isReturnDefaultValues = true
     }
 
     packaging {
@@ -127,7 +173,10 @@ dependencies {
     // Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth.ktx)
-    implementation(libs.firebase.database.ktx)
+    // Farmer profile documents (Phase 4) — replaces the never-configured,
+    // never-used firebase-database-ktx (no databaseURL in google-services.json,
+    // zero references in the codebase) rather than adding a second cloud DB.
+    implementation(libs.firebase.firestore.ktx)
 
     // DataStore
     implementation(libs.androidx.datastore.preferences)
@@ -137,6 +186,13 @@ dependencies {
 
     // ONNX Runtime
     implementation(libs.onnxruntime.android)
+
+    // On-device LLM inference (Phase 5 Part 3) — Google's LiteRT-LM runtime
+    // (the actively-maintained successor to the older, now-deprecated
+    // MediaPipe tasks-genai/LlmInference API) for running a small local
+    // model (Gemma 3 1B int4) directly on the phone, no PC/FastAPI/Ollama
+    // required. See MediaPipeOnDeviceLlmProvider.
+    implementation(libs.litertlm.android)
 
     // Image loading
     implementation(libs.coil.compose)

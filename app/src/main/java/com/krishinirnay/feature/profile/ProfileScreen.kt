@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AccountBalance
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.Language
@@ -45,6 +46,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.krishinirnay.core.data.model.FarmerProfile
 import com.krishinirnay.core.designsystem.components.KnCard
+import com.krishinirnay.core.designsystem.components.ProfileCompletionCard
 import com.krishinirnay.core.designsystem.strings.LocalAppStrings
 
 @Composable
@@ -54,6 +56,7 @@ fun ProfileScreen(
     onNavigateToEquipment: () -> Unit,
     onNavigateToDocuments: () -> Unit,
     onNavigateToSettings: () -> Unit,
+    onNavigateToSchemes: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
@@ -76,11 +79,22 @@ fun ProfileScreen(
         ) {
             item { ProfileHeaderCard(profile, strings.profileFarmSizeTemplate) }
             item {
+                val completion = remember(profile) { profile.completion(strings) }
+                ProfileCompletionCard(
+                    percent = completion.percent,
+                    missingLabels = completion.missingLabels,
+                    completeMessage = strings.profileCompletionComplete,
+                    percentTemplate = strings.profileCompletionTemplate,
+                    missingLabel = strings.profileCompletionMissingLabel,
+                )
+            }
+            item {
                 KnCard(contentPadding = PaddingValues(vertical = 4.dp)) {
                     MenuRow(Icons.Rounded.Spa, Color(0xFF1E7D44), Color(0xFFE3F5E9), strings.profileMyCrops, onNavigateToCrops, subtitle = profile.crops.joinToString(", "))
                     MenuRow(Icons.Rounded.Landscape, Color(0xFFB07A2E), Color(0xFFF6EBDA), strings.profileMyFarm, onNavigateToFarm)
                     MenuRow(Icons.Rounded.Sensors, Color(0xFF2F80ED), Color(0xFFE4EFFD), strings.profileMyEquipment, onNavigateToEquipment)
                     MenuRow(Icons.Rounded.Description, Color(0xFF8E5FD1), Color(0xFFEEE6FA), strings.profileMyDocuments, onNavigateToDocuments)
+                    MenuRow(Icons.Rounded.AccountBalance, Color(0xFFB0742E), Color(0xFFF6EEDA), strings.dashboardQaSchemes, onNavigateToSchemes)
                     MenuRow(Icons.Rounded.Settings, Color(0xFF5B665F), Color(0xFFF1F3EF), strings.settings, onNavigateToSettings)
                     MenuRow(Icons.Rounded.Language, Color(0xFF12A594), Color(0xFFDFF5F1), strings.settingsLanguage, onNavigateToSettings, showDivider = false)
                 }

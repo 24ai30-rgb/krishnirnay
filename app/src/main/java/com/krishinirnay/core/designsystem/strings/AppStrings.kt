@@ -8,485 +8,1598 @@ import androidx.compose.runtime.staticCompositionLocalOf
  * resource-locale mechanism (AppCompatDelegate.setApplicationLocales) because this app has no
  * AppCompat dependency and every screen already reads UI state via Compose/StateFlow.
  */
-data class AppStrings(
+class AppStrings {
     // Common
-    val online: String,
-    val offline: String,
-    val settings: String,
-    val back: String,
-    val logOut: String,
+    var online: String = ""
+    var offline: String = ""
+    var settings: String = ""
+    var back: String = ""
+    var logOut: String = ""
 
     // Risk badge
-    val riskLow: String,
-    val riskMedium: String,
-    val riskHigh: String,
-    val riskNotAssessed: String,
+    var riskLow: String = ""
+    var riskMedium: String = ""
+    var riskHigh: String = ""
+    var riskNotAssessed: String = ""
 
     // Relative time
-    val timeJustNow: String,
-    val timeSecondsAgoTemplate: String,
-    val timeMinutesAgoTemplate: String,
-    val timeHoursAgoTemplate: String,
-    val timeDaysAgoTemplate: String,
-    val timeNever: String,
+    var timeJustNow: String = ""
+    var timeSecondsAgoTemplate: String = ""
+    var timeMinutesAgoTemplate: String = ""
+    var timeHoursAgoTemplate: String = ""
+    var timeDaysAgoTemplate: String = ""
+    var timeNever: String = ""
 
     // Decision engine — recommendation
-    val recommendationIrrigateSevere: String,
-    val recommendationIrrigateWaterHigh: String,
-    val recommendationShadeOrIrrigateHeat: String,
-    val recommendationReviewCropHealthHigh: String,
-    val recommendationPlanIrrigationSoon: String,
-    val recommendationMonitorTemperature: String,
-    val recommendationReviewCropHealthModerate: String,
-    val recommendationHealthyRange: String,
-    val recommendationNotEnoughData: String,
+    var recommendationIrrigateSevere: String = ""
+    var recommendationIrrigateWaterHigh: String = ""
+    var recommendationShadeOrIrrigateHeat: String = ""
+    var recommendationReviewCropHealthHigh: String = ""
+    var recommendationPlanIrrigationSoon: String = ""
+    var recommendationMonitorTemperature: String = ""
+    var recommendationReviewCropHealthModerate: String = ""
+    var recommendationHealthyRange: String = ""
+    var recommendationNotEnoughData: String = ""
 
     // Decision engine — reasons
-    val reasonSoilMoistureHighTemplate: String,
-    val reasonSoilMoistureMediumTemplate: String,
-    val reasonSoilMoistureHealthyTemplate: String,
-    val reasonModelPredictionTemplate: String,
-    val reasonTemperatureHighTemplate: String,
-    val reasonTemperatureMediumTemplate: String,
-    val reasonTemperatureHealthyTemplate: String,
-    val reasonCropHealthNotAssessed: String,
-    val reasonCropHealthAssessedTemplate: String,
-    val reasonDeviceOffline: String,
+    var reasonSoilMoistureHighTemplate: String = ""
+    var reasonSoilMoistureMediumTemplate: String = ""
+    var reasonSoilMoistureHealthyTemplate: String = ""
+    var reasonModelPredictionTemplate: String = ""
+    var reasonTemperatureHighTemplate: String = ""
+    var reasonTemperatureMediumTemplate: String = ""
+    var reasonTemperatureHealthyTemplate: String = ""
+    var reasonCropHealthNotAssessed: String = ""
+    var reasonCropHealthAssessedTemplate: String = ""
+    var reasonDeviceOffline: String = ""
 
     // Bottom navigation
-    val navHome: String,
-    val navAdvisory: String,
-    val navWeather: String,
-    val navAlerts: String,
-    val navProfile: String,
+    var navHome: String = ""
+    var navAdvisory: String = ""
+    var navWeather: String = ""
+    var navAlerts: String = ""
+    var navAssistant: String = ""
+    var navProfile: String = ""
 
     // Dashboard
-    val dashboardGreeting: String,
-    val dashboardOverallRisk: String,
-    val dashboardGatheringReading: String,
-    val dashboardViewFullAnalysis: String,
-    val dashboardWaterStress: String,
-    val dashboardHeat: String,
-    val dashboardCropHealth: String,
-    val dashboardDeviceOnline: String,
-    val dashboardDeviceOffline: String,
-    val dashboardSyncedTemplate: String,
-    val dashboardQuickAccess: String,
-    val dashboardQaAdvisory: String,
-    val dashboardQaMonitoring: String,
-    val dashboardQaSchemes: String,
+    var dashboardGreeting: String = ""
+    var dashboardGreetingMorning: String = ""
+    var dashboardGreetingAfternoon: String = ""
+    var dashboardGreetingEvening: String = ""
+    var dashboardLiveToday: String = ""
+    var dashboardShowingLastAvailable: String = ""
+    var dashboardOverallRisk: String = ""
+    var dashboardGatheringReading: String = ""
+    var dashboardViewFullAnalysis: String = ""
+    var dashboardWhyLabel: String = ""
+    var dashboardFertilizerLabel: String = ""
+    var feedbackDidYouFollow: String = ""
+    var feedbackYes: String = ""
+    var feedbackNo: String = ""
+    var feedbackPartially: String = ""
+    var feedbackWhatHappened: String = ""
+    var feedbackThanks: String = ""
+    var feedbackResultImproved: String = ""
+    var feedbackResultNoChange: String = ""
+    var feedbackResultWorse: String = ""
+    var feedbackResultOther: String = ""
+    var dashboardWaterStress: String = ""
+    var dashboardHeat: String = ""
+    var dashboardCropHealth: String = ""
+    var dashboardDeviceOnline: String = ""
+    var dashboardDeviceOffline: String = ""
+    var dashboardSyncedTemplate: String = ""
+    var dashboardQuickAccess: String = ""
+    var dashboardQaAdvisory: String = ""
+    var dashboardQaMonitoring: String = ""
+    var dashboardQaSchemes: String = ""
+    var dashboardQaMarket: String = ""
+    var dashboardQaDisease: String = ""
+    var dashboardQaAssistant: String = ""
+    var dashboardQaFarmSetup: String = ""
 
     // Live Monitoring / Soil & Field Sensors
-    val monitoringTitle: String,
-    val soilMoisture: String,
-    val temperature: String,
-    val humidity: String,
-    val phLabel: String,
-    val lastUpdatedTemplate: String,
+    var monitoringTitle: String = ""
+    var soilMoisture: String = ""
+    var temperature: String = ""
+    var humidity: String = ""
+    var phLabel: String = ""
+    var lastUpdatedTemplate: String = ""
 
     // Crop Health / Disease Detection
-    val diseaseDetectionTitle: String,
-    val scanLeaf: String,
-    val choosePhoto: String,
-    val analyzingPhoto: String,
-    val confidenceTemplate: String,
+    var diseaseDetectionTitle: String = ""
+    var scanLeaf: String = ""
+    var choosePhoto: String = ""
+    var analyzingPhoto: String = ""
+    var confidenceTemplate: String = ""
 
     // Alerts
-    val alertsTitle: String,
-    val alertsEmpty: String,
+    var alertsTitle: String = ""
+    var alertsEmpty: String = ""
 
     // Voice Assistant / Chatbot
-    val voiceAssistantTitle: String,
-    val chatbotWelcome: String,
-    val chatbotPlaceholder: String,
-    val chatbotFallback: String,
-    val chatbotListen: String,
-    val chatbotSpeak: String,
-    val chatbotMicPermissionDenied: String,
-    val chatbotSend: String,
-    val contentDescOpenChatbot: String,
-    val chatbotChipWeather: String,
-    val chatbotChipSoilMoisture: String,
-    val chatbotChipWhatToDo: String,
-    val chatbotChipSchemes: String,
-    val chatbotWeatherReplyTemplate: String,
-    val chatbotSoilMoistureReplyTemplate: String,
-    val chatbotSoilStatusDeficient: String,
-    val chatbotSoilStatusTrendingLow: String,
-    val chatbotSoilStatusHealthy: String,
-    val chatbotSoilStatusUnknown: String,
-    val chatbotAdviceIrrigateNowTemplate: String,
-    val chatbotAdviceIrrigateSoonTemplate: String,
-    val chatbotAdviceNoIrrigationNeeded: String,
-    val chatbotAdviceNotEnoughData: String,
-    val chatbotSchemesReplyTemplate: String,
-    val chatbotFallbackHelp: String,
+    var voiceAssistantTitle: String = ""
+    var chatbotSubtitle: String = ""
+    var chatbotWelcome: String = ""
+    var chatbotPlaceholder: String = ""
+    var chatbotFallback: String = ""
+    var chatbotListen: String = ""
+    var chatbotSpeak: String = ""
+    var chatbotMicPermissionDenied: String = ""
+    var chatbotSend: String = ""
+    var chatbotStop: String = ""
+    var chatbotRetry: String = ""
+    var chatbotCopy: String = ""
+    var chatbotCopied: String = ""
+    var chatbotClearChat: String = ""
+    var chatbotThinking: String = ""
+    var localAiStopped: String = ""
+    var contentDescOpenChatbot: String = ""
+    var chatbotChipWeather: String = ""
+    var chatbotChipSoilMoisture: String = ""
+    var chatbotChipWhatToDo: String = ""
+    var chatbotChipSchemes: String = ""
+    var chatbotWeatherReplyTemplate: String = ""
+    var chatbotSoilMoistureReplyTemplate: String = ""
+    var chatbotSoilStatusDeficient: String = ""
+    var chatbotSoilStatusTrendingLow: String = ""
+    var chatbotSoilStatusHealthy: String = ""
+    var chatbotSoilStatusUnknown: String = ""
+    var chatbotAdviceIrrigateNowTemplate: String = ""
+    var chatbotAdviceIrrigateSoonTemplate: String = ""
+    var chatbotAdviceNoIrrigationNeeded: String = ""
+    var chatbotAdviceNotEnoughData: String = ""
+    var chatbotSchemesReplyTemplate: String = ""
+    var chatbotFallbackHelp: String = ""
 
     // Settings
-    val settingsDataSource: String,
-    val settingsDataSourceDescription: String,
-    val settingsLanguage: String,
-    val settingsModeMock: String,
-    val settingsModeLive: String,
-    val settingsLanguageEnglish: String,
-    val settingsLanguageHindi: String,
+    var settingsDataSource: String = ""
+    var settingsDataSourceDescription: String = ""
+    var settingsLanguage: String = ""
+    var settingsModeMock: String = ""
+    var settingsModeLive: String = ""
+    var settingsLanguageEnglish: String = ""
+    var settingsLanguageHindi: String = ""
 
     // Login
-    val loginTagline: String,
-    val loginEmail: String,
-    val loginPassword: String,
-    val loginSubmit: String,
-    val loginDemoHint: String,
+    var loginTagline: String = ""
+    var loginEmail: String = ""
+    var loginPassword: String = ""
+    var loginSubmit: String = ""
+    var loginDemoHint: String = ""
+    var loginCreateAccount: String = ""
+    var loginForgotPassword: String = ""
+    var loginResetEmailSent: String = ""
+
+    // Register
+    var registerTitle: String = ""
+    var registerSubtitle: String = ""
+    var registerFirstName: String = ""
+    var registerLastName: String = ""
+    var registerConfirmPassword: String = ""
+    var registerMobile: String = ""
+    var registerSubmit: String = ""
+    var registerAlreadyHaveAccount: String = ""
+    var registerErrorNameRequired: String = ""
+    var registerErrorInvalidEmail: String = ""
+    var registerErrorPasswordTooShort: String = ""
+    var registerErrorPasswordMismatch: String = ""
+    var registerErrorInvalidMobile: String = ""
 
     // Crop Advisory
-    val advisoryTitle: String,
-    val advisoryAiAdvice: String,
-    val advisoryRecommendedTasks: String,
-    val advisoryTaskIrrigate: String,
-    val advisoryTaskPestControl: String,
-    val advisoryTaskFertilizer: String,
-    val advisoryTaskSpraySchedule: String,
-    val advisoryIrrigateHighTemplate: String,
-    val advisoryIrrigateLowTemplate: String,
-    val advisoryPestWithDiseaseTemplate: String,
-    val advisoryPestElevated: String,
-    val advisoryPestNone: String,
-    val advisoryFertilizerDetail: String,
+    var advisoryTitle: String = ""
+    var advisoryAiAdvice: String = ""
+    var advisoryRecommendedTasks: String = ""
+    var advisoryTaskIrrigate: String = ""
+    var advisoryTaskPestControl: String = ""
+    var advisoryTaskFertilizer: String = ""
+    var advisoryTaskSpraySchedule: String = ""
+    var advisoryIrrigateHighTemplate: String = ""
+    var advisoryIrrigateLowTemplate: String = ""
+    var advisoryPestWithDiseaseTemplate: String = ""
+    var advisoryPestElevated: String = ""
+    var advisoryPestNone: String = ""
 
     // Weather
-    val weatherTitle: String,
-    val weatherToday: String,
-    val weatherThreeDay: String,
-    val weatherSevenDay: String,
-    val weatherRainChance: String,
-    val weatherWind: String,
-    val weatherRainInTemplate: String,
+    var weatherTitle: String = ""
+    var weatherToday: String = ""
+    var weatherThreeDay: String = ""
+    var weatherSevenDay: String = ""
+    var weatherRainChance: String = ""
+    var weatherWind: String = ""
+    var weatherFeelsLike: String = ""
+    var weatherUvIndex: String = ""
+    var weatherConditionSunny: String = ""
+    var weatherConditionPartlyCloudy: String = ""
+    var weatherConditionCloudy: String = ""
+    var weatherConditionRain: String = ""
+    var weatherConditionStorm: String = ""
+    var weatherRainInTemplate: String = ""
+    var weatherUnavailableMessage: String = ""
+    var weatherVisibility: String = ""
+    var weatherPressure: String = ""
+    var weatherFarmingTips: String = ""
+    var weatherTipRainLikely: String = ""
+    var weatherTipGoodForIrrigation: String = ""
+    var weatherTipHighHumidityDisease: String = ""
+    var weatherTipHighWindSpraying: String = ""
 
     // Government Schemes
-    val schemesTitle: String,
-    val schemesSubtitle: String,
-    val schemesViewDetails: String,
-    val schemesHideDetails: String,
-    val schemesEligibilityLabel: String,
+    var schemesTitle: String = ""
+    var schemesSubtitle: String = ""
+    var schemesViewDetails: String = ""
+    var schemesHideDetails: String = ""
+    var schemesEligibilityLabel: String = ""
+    var schemesLastVerified: String = ""
+    var schemesUnavailable: String = ""
+    var schemesWhyEligible: String = ""
 
     // Profile
-    val profileTitle: String,
-    val profileMyCrops: String,
-    val profileMyFarm: String,
-    val profileMyEquipment: String,
-    val profileMyDocuments: String,
-    val profileFarmSizeTemplate: String,
-    val profileNoDocuments: String,
-)
+    var profileTitle: String = ""
+    var profileMyCrops: String = ""
+    var profileMyFarm: String = ""
+    var profileMyEquipment: String = ""
+    var profileMyDocuments: String = ""
+    var profileFarmSizeTemplate: String = ""
+    var profileNoDocuments: String = ""
 
-val EnglishStrings = AppStrings(
-    online = "Online",
-    offline = "Offline",
-    settings = "Settings",
-    back = "Back",
-    logOut = "Log Out",
+    // Pest integration (Phase 2.9)
+    var recommendationTreatPestDetected: String = ""
+    var recommendationMonitorPestRisk: String = ""
+    var reasonPestNotAssessed: String = ""
+    var reasonPestAssessedTemplate: String = ""
+    var reasonRainExpectedSoon: String = ""
 
-    riskLow = "Low",
-    riskMedium = "Medium",
-    riskHigh = "High",
-    riskNotAssessed = "Not assessed",
+    // Timing / expected benefit (Phase 2.7)
+    var timingImmediate: String = ""
+    var timingThisEvening: String = ""
+    var timingWithin24Hours: String = ""
+    var timingWithin3Days: String = ""
+    var timingNoActionNeeded: String = ""
+    var benefitPreventCropLoss: String = ""
+    var benefitImprovedYield: String = ""
+    var benefitHealthyGrowthContinues: String = ""
+    var benefitUnknown: String = ""
 
-    timeJustNow = "just now",
-    timeSecondsAgoTemplate = "%d sec ago",
-    timeMinutesAgoTemplate = "%d min ago",
-    timeHoursAgoTemplate = "%d hr ago",
-    timeDaysAgoTemplate = "%d d ago",
-    timeNever = "never",
+    // Fertilizer recommendation (Phase 2.6)
+    var fertilizerNutrientNitrogenName: String = ""
+    var fertilizerNutrientPhosphorusName: String = ""
+    var fertilizerNutrientPotassiumName: String = ""
+    var fertilizerTypeUreaName: String = ""
+    var fertilizerTypeDapName: String = ""
+    var fertilizerTypeMopName: String = ""
+    var fertilizerRecommendedTemplate: String = ""
+    var fertilizerSafetyNote: String = ""
+    var fertilizerNoActionNeeded: String = ""
+    var fertilizerInsufficientData: String = ""
 
-    recommendationIrrigateSevere = "Irrigate immediately — soil moisture is critically low and temperatures are high.",
-    recommendationIrrigateWaterHigh = "Irrigate immediately — soil moisture is critically low.",
-    recommendationShadeOrIrrigateHeat = "Provide shade or irrigate to offset high temperatures.",
-    recommendationReviewCropHealthHigh = "Crop health risk is high — review the latest scan and consider treatment.",
-    recommendationPlanIrrigationSoon = "Plan irrigation within the next day — soil moisture is trending low.",
-    recommendationMonitorTemperature = "Monitor temperature — conditions are warmer than ideal.",
-    recommendationReviewCropHealthModerate = "Keep an eye on crop health — the latest scan shows a moderate concern.",
-    recommendationHealthyRange = "Soil moisture and temperature are within a healthy range. No action needed today.",
-    recommendationNotEnoughData = "Not enough data yet to make a recommendation.",
+    // Settings — Marathi option (Phase 2.10)
+    var settingsLanguageMarathi: String = ""
+    var settingsAiMode: String = ""
+    var settingsAiModeLocal: String = ""
+    var settingsAiModeOffline: String = ""
+    var settingsAiModeUnavailable: String = ""
+    var settingsAiModeLoading: String = ""
+    var settingsAiModeModelMissing: String = ""
+    var settingsAiModeGenerating: String = ""
+    var aiStatusOnDeviceReady: String = ""
+    var aiStatusServerReady: String = ""
+    var aiStatusOffline: String = ""
+    var localAiGenerationFailed: String = ""
+    var localAiBothUnavailable: String = ""
+    var localAiDataUnavailable: String = ""
+    var aiDiagnosticsTitle: String = ""
+    var aiDiagnosticsRunHint: String = ""
+    var aiDiagnosticsProvider: String = ""
+    var aiDiagnosticsServer: String = ""
+    var localAiDiagnosticsRun: String = ""
+    var localAiDiagnosticsRunning: String = ""
+    var localAiDiagnosticsServerReachable: String = ""
+    var localAiDiagnosticsOllamaAvailable: String = ""
+    var localAiDiagnosticsEnglishModel: String = ""
+    var localAiDiagnosticsHindiModel: String = ""
+    var localAiDiagnosticsMarathiModel: String = ""
+    var localAiDiagnosticsChatEndpointAvailable: String = ""
+    var localAiDiagnosticsYes: String = ""
+    var localAiDiagnosticsNo: String = ""
+    var settingsCloudFallback: String = ""
+    var settingsCloudFallbackDescription: String = ""
+    var simulationTitle: String = ""
+    var simulationDescription: String = ""
+    var simulationLiveModeWarning: String = ""
+    var simulationDrySoil: String = ""
+    var simulationNormalSoil: String = ""
+    var simulationWetSoil: String = ""
+    var simulationHighTemp: String = ""
+    var simulationLowTemp: String = ""
+    var simulationHighHumidity: String = ""
+    var simulationLowHumidity: String = ""
+    var simulationIrrigate: String = ""
+    var simulationDisconnect: String = ""
+    var simulationReconnect: String = ""
+    var settingsOpenSimulation: String = ""
 
-    reasonSoilMoistureHighTemplate = "Soil moisture at %.1f%% is critically low",
-    reasonSoilMoistureMediumTemplate = "Soil moisture at %.1f%% is trending low",
-    reasonSoilMoistureHealthyTemplate = "Soil moisture at %.1f%% is within a healthy range",
-    reasonModelPredictionTemplate = "On-device model predicts %s water-stress risk with %d%% confidence",
-    reasonTemperatureHighTemplate = "Temperature at %.1f°C is at or above the high-risk threshold",
-    reasonTemperatureMediumTemplate = "Temperature at %.1f°C is warmer than ideal",
-    reasonTemperatureHealthyTemplate = "Temperature at %.1f°C is steady and within range",
-    reasonCropHealthNotAssessed = "Crop health has not been assessed yet — scan a leaf in Crop Health",
-    reasonCropHealthAssessedTemplate = "Latest crop scan (%s) shows %s risk",
-    reasonDeviceOffline = "Device is offline — showing the last synced reading",
+    // Settings — section reorganization (UI/UX phase)
+    var settingsSectionProfile: String = ""
+    var settingsSectionLanguageVoice: String = ""
+    var settingsSectionAdvanced: String = ""
+    var settingsFarmerProfile: String = ""
+    var settingsFarmInformation: String = ""
+    var settingsVoiceAssistant: String = ""
+    var settingsVoiceAssistantDescription: String = ""
+    var profileCompletionTemplate: String = ""
+    var profileCompletionMissingLabel: String = ""
+    var profileCompletionComplete: String = ""
 
-    navHome = "Home",
-    navAdvisory = "Advisory",
-    navWeather = "Weather",
-    navAlerts = "Alerts",
-    navProfile = "Profile",
+    // Onboarding (Farmer Registration)
+    var onboardingStepOfTemplate: String = ""
+    var onboardingContinue: String = ""
+    var onboardingBack: String = ""
+    var onboardingWelcomeTitle: String = ""
+    var onboardingWelcomeSubtitle: String = ""
+    var onboardingPersonalStepTitle: String = ""
+    var onboardingFullName: String = ""
+    var onboardingMobileNumber: String = ""
+    var onboardingAlternateMobile: String = ""
+    var onboardingGender: String = ""
+    var onboardingAddress: String = ""
+    var onboardingFarmStepTitle: String = ""
+    var onboardingOwnershipType: String = ""
+    var onboardingIrrigationAvailable: String = ""
+    var onboardingWaterSource: String = ""
+    var onboardingCropStepTitle: String = ""
+    var onboardingPrimaryCrop: String = ""
+    var onboardingSecondaryCrop: String = ""
+    var onboardingCropStage: String = ""
+    var onboardingPreferencesStepTitle: String = ""
+    var onboardingFarmingExperience: String = ""
+    var onboardingVoiceAssistance: String = ""
+    var onboardingConfirmationStepTitle: String = ""
+    var onboardingConfirmationFarmer: String = ""
+    var onboardingConfirmationFarm: String = ""
+    var onboardingConfirmationLocation: String = ""
+    var onboardingConfirmationCrop: String = ""
+    var onboardingConfirmationIrrigation: String = ""
+    var onboardingConfirmationLanguage: String = ""
+    var onboardingSaveProfile: String = ""
+    var onboardingRequiredFieldsMissing: String = ""
+    var onboardingOptionalLabel: String = ""
 
-    dashboardGreeting = "Namaste, Farmer!",
-    dashboardOverallRisk = "Overall Field Risk",
-    dashboardGatheringReading = "Gathering the first reading…",
-    dashboardViewFullAnalysis = "View full AI analysis →",
-    dashboardWaterStress = "Water Stress",
-    dashboardHeat = "Heat",
-    dashboardCropHealth = "Crop Health",
-    dashboardDeviceOnline = "Device Online",
-    dashboardDeviceOffline = "Device Offline",
-    dashboardSyncedTemplate = "Synced %s",
-    dashboardQuickAccess = "Quick Access",
-    dashboardQaAdvisory = "Crop Advisory",
-    dashboardQaMonitoring = "Field Sensors",
-    dashboardQaSchemes = "Govt. Schemes",
+    // Farm Setup (Phase 2.2)
+    var farmSetupTitle: String = ""
+    var farmSetupLocationSection: String = ""
+    var farmSetupState: String = ""
+    var farmSetupDistrict: String = ""
+    var farmSetupTaluka: String = ""
+    var farmSetupVillage: String = ""
+    var farmSetupCoordinatesSection: String = ""
+    var farmSetupCoordinatesHint: String = ""
+    var farmSetupLatitude: String = ""
+    var farmSetupLongitude: String = ""
+    var farmSetupAcres: String = ""
+    var farmSetupSoilType: String = ""
+    var farmSetupCrop: String = ""
+    var farmSetupCropVariety: String = ""
+    var farmSetupIrrigationMethod: String = ""
+    var farmSetupIrrigationRainFed: String = ""
+    var farmSetupIrrigationIrrigated: String = ""
+    var farmSetupIrrigationDrip: String = ""
+    var farmSetupIrrigationSprinkler: String = ""
+    var farmSetupIrrigationOther: String = ""
+    var farmSetupSave: String = ""
+    var farmSetupSaved: String = ""
 
-    monitoringTitle = "Live Monitoring",
-    soilMoisture = "Soil Moisture",
-    temperature = "Temperature",
-    humidity = "Humidity",
-    phLabel = "pH · Phase 2 sensor",
-    lastUpdatedTemplate = "Last updated %s",
+    // Weather / Market honest status (Phase 2.4 / 2.5)
+    var dataSourceLive: String = ""
+    var dataSourceCached: String = ""
+    var dataSourceMock: String = ""
+    var dataSourceUnavailable: String = ""
+    var dataSourceLoading: String = ""
+    var dataSourceNoData: String = ""
+    var weatherLoading: String = ""
+    var weatherFetchFailed: String = ""
+    var weatherNoLocation: String = ""
+    var marketLoading: String = ""
+    var marketNoDataToday: String = ""
+    var marketFetchFailed: String = ""
+    var actionRetry: String = ""
+    var marketChangeCropOrLocation: String = ""
+    var marketSameDistrict: String = ""
+    var marketSameState: String = ""
+    var marketViewMoreMarkets: String = ""
+    var marketTitle: String = ""
+    var marketUnavailable: String = ""
+    var marketLatestAvailable: String = ""
+    var marketModalLabel: String = ""
+    var marketMinLabel: String = ""
+    var marketMaxLabel: String = ""
+    var marketDateLabel: String = ""
+    var marketOtherMandis: String = ""
+    var marketTrendRising: String = ""
+    var marketTrendFalling: String = ""
+    var marketTrendStable: String = ""
+    var marketNoDataTodayTemplate: String = ""
+    var marketBestAvailable: String = ""
+    var marketPerQuintal: String = ""
+    var marketAvgLabel: String = ""
+    var marketLastUpdatedTemplate: String = ""
+}
 
-    diseaseDetectionTitle = "Disease Detection",
-    scanLeaf = "Scan a leaf",
-    choosePhoto = "Choose a photo from your gallery",
-    analyzingPhoto = "Analyzing your photo…",
-    confidenceTemplate = "%d%% confidence",
+val EnglishStrings = AppStrings().apply {
+    online = "Online"
+    offline = "Offline"
+    settings = "Settings"
+    back = "Back"
+    logOut = "Log Out"
 
-    alertsTitle = "Alerts",
-    alertsEmpty = "No alerts yet — you'll see risk changes and crop scan results here.",
+    riskLow = "Low"
+    riskMedium = "Medium"
+    riskHigh = "High"
+    riskNotAssessed = "Not assessed"
 
-    voiceAssistantTitle = "Voice Assistant",
-    chatbotWelcome = "Namaste Kisan, how can I help you today?",
-    chatbotPlaceholder = "Ask about your field…",
-    chatbotFallback = "Sorry, I couldn't reach the server just now. Please try again in a moment.",
-    chatbotListen = "Listen",
-    chatbotSpeak = "Speak",
-    chatbotMicPermissionDenied = "Microphone permission is needed for voice input.",
-    chatbotSend = "Send",
-    contentDescOpenChatbot = "Open chatbot",
-    chatbotChipWeather = "Weather?",
-    chatbotChipSoilMoisture = "Soil moisture?",
-    chatbotChipWhatToDo = "What should I do?",
-    chatbotChipSchemes = "Schemes?",
-    chatbotWeatherReplyTemplate = "Rain chance in the next %s hours is %d%%. Wind speed is %d km/h.",
-    chatbotSoilMoistureReplyTemplate = "Your soil moisture is %.1f%% — %s.",
-    chatbotSoilStatusDeficient = "Deficient",
-    chatbotSoilStatusTrendingLow = "Trending Low",
-    chatbotSoilStatusHealthy = "Healthy",
-    chatbotSoilStatusUnknown = "Not assessed",
-    chatbotAdviceIrrigateNowTemplate = "Irrigate today for about %d minutes.",
-    chatbotAdviceIrrigateSoonTemplate = "Plan to irrigate within the next day for about %d minutes.",
-    chatbotAdviceNoIrrigationNeeded = "No irrigation needed today — conditions are healthy.",
-    chatbotAdviceNotEnoughData = "Not enough data yet — check back after the first reading.",
-    chatbotSchemesReplyTemplate = "Based on your farm, these schemes may help: %s",
-    chatbotFallbackHelp = "I can help with soil moisture, weather, irrigation advice, and government schemes — tap a suggestion below or ask me about one of those!",
+    timeJustNow = "just now"
+    timeSecondsAgoTemplate = "%d sec ago"
+    timeMinutesAgoTemplate = "%d min ago"
+    timeHoursAgoTemplate = "%d hr ago"
+    timeDaysAgoTemplate = "%d d ago"
+    timeNever = "never"
 
-    settingsDataSource = "Data source",
-    settingsDataSourceDescription = "Mock Mode is the default — fully offline, evolving demo data. Switch to Live Mode once a real ESP32 device and Firebase project are connected.",
-    settingsLanguage = "Language",
-    settingsModeMock = "Mock",
-    settingsModeLive = "Live",
-    settingsLanguageEnglish = "English",
-    settingsLanguageHindi = "हिंदी",
+    recommendationIrrigateSevere = "Irrigate immediately — soil moisture is critically low and temperatures are high."
+    recommendationIrrigateWaterHigh = "Irrigate immediately — soil moisture is critically low."
+    recommendationShadeOrIrrigateHeat = "Provide shade or irrigate to offset high temperatures."
+    recommendationReviewCropHealthHigh = "Crop health risk is high — review the latest scan and consider treatment."
+    recommendationPlanIrrigationSoon = "Plan irrigation within the next day — soil moisture is trending low."
+    recommendationMonitorTemperature = "Monitor temperature — conditions are warmer than ideal."
+    recommendationReviewCropHealthModerate = "Keep an eye on crop health — the latest scan shows a moderate concern."
+    recommendationHealthyRange = "Soil moisture and temperature are within a healthy range. No action needed today."
+    recommendationNotEnoughData = "Not enough data yet to make a recommendation."
 
-    loginTagline = "Smart field monitoring for every farmer",
-    loginEmail = "Email",
-    loginPassword = "Password",
-    loginSubmit = "Log In",
-    loginDemoHint = "Using demo? Try demo@krishinirnay.app",
+    reasonSoilMoistureHighTemplate = "Soil moisture at %.1f%% is critically low"
+    reasonSoilMoistureMediumTemplate = "Soil moisture at %.1f%% is trending low"
+    reasonSoilMoistureHealthyTemplate = "Soil moisture at %.1f%% is within a healthy range"
+    reasonModelPredictionTemplate = "On-device model predicts %s water-stress risk with %d%% confidence"
+    reasonTemperatureHighTemplate = "Temperature at %.1f°C is at or above the high-risk threshold"
+    reasonTemperatureMediumTemplate = "Temperature at %.1f°C is warmer than ideal"
+    reasonTemperatureHealthyTemplate = "Temperature at %.1f°C is steady and within range"
+    reasonCropHealthNotAssessed = "Crop health has not been assessed yet — scan a leaf in Crop Health"
+    reasonCropHealthAssessedTemplate = "Latest crop scan (%s) shows %s risk"
+    reasonDeviceOffline = "Device is offline — showing the last synced reading"
 
-    advisoryTitle = "Crop Advisory",
-    advisoryAiAdvice = "AI Advice",
-    advisoryRecommendedTasks = "Current Recommendations",
-    advisoryTaskIrrigate = "Irrigate",
-    advisoryTaskPestControl = "Pest Control",
-    advisoryTaskFertilizer = "Fertilizer Dose",
-    advisoryTaskSpraySchedule = "Spray Schedule",
-    advisoryIrrigateHighTemplate = "Soil moisture is %d%%. Irrigate within 12–24 hours.",
-    advisoryIrrigateLowTemplate = "Soil moisture is healthy at %d%%. No irrigation needed today.",
-    advisoryPestWithDiseaseTemplate = "Signs of %s detected — apply the recommended treatment.",
-    advisoryPestElevated = "Crop health risk is elevated — inspect leaves for pests or disease.",
-    advisoryPestNone = "No pest or disease risk detected — keep monitoring weekly.",
-    advisoryFertilizerDetail = "Apply the recommended NPK mix for this growth stage.",
+    navHome = "Home"
+    navAdvisory = "Advisory"
+    navWeather = "Weather"
+    navAlerts = "Alerts"
+    navAssistant = "AI Assistant"
+    navProfile = "Profile"
 
-    weatherTitle = "Weather Forecast",
-    weatherToday = "Today",
-    weatherThreeDay = "3 Days",
-    weatherSevenDay = "7 Days",
-    weatherRainChance = "Chance of Rain",
-    weatherWind = "Wind",
-    weatherRainInTemplate = "Rain expected in %s hours",
+    dashboardGreeting = "Namaste, Farmer!"
+    dashboardGreetingMorning = "Good morning, %s"
+    dashboardGreetingAfternoon = "Good afternoon, %s"
+    dashboardGreetingEvening = "Good evening, %s"
+    dashboardLiveToday = "Live data updated today"
+    dashboardShowingLastAvailable = "Showing last available data"
+    dashboardOverallRisk = "Overall Field Risk"
+    dashboardGatheringReading = "Gathering the first reading…"
+    dashboardViewFullAnalysis = "View full AI analysis →"
+    dashboardWhyLabel = "Why"
+    dashboardFertilizerLabel = "Fertilizer"
+    feedbackDidYouFollow = "Did you follow this recommendation?"
+    feedbackYes = "Yes"
+    feedbackNo = "No"
+    feedbackPartially = "Partially"
+    feedbackWhatHappened = "What happened?"
+    feedbackThanks = "Thanks for your feedback!"
+    feedbackResultImproved = "Crop improved"
+    feedbackResultNoChange = "No change"
+    feedbackResultWorse = "Crop got worse"
+    feedbackResultOther = "Other"
+    dashboardWaterStress = "Water Stress"
+    dashboardHeat = "Heat"
+    dashboardCropHealth = "Crop Health"
+    dashboardDeviceOnline = "Device Online"
+    dashboardDeviceOffline = "Device Offline"
+    dashboardSyncedTemplate = "Synced %s"
+    dashboardQuickAccess = "Quick Access"
+    dashboardQaAdvisory = "Crop Advisory"
+    dashboardQaMonitoring = "Field Sensors"
+    dashboardQaSchemes = "Govt. Schemes"
+    dashboardQaMarket = "Market"
+    dashboardQaDisease = "Disease Scan"
+    dashboardQaAssistant = "AI Assistant"
+    dashboardQaFarmSetup = "Farm Setup"
 
-    schemesTitle = "Government Schemes",
-    schemesSubtitle = "Schemes suitable for you",
-    schemesViewDetails = "View Details",
-    schemesHideDetails = "Hide Details",
-    schemesEligibilityLabel = "Eligibility",
+    monitoringTitle = "Live Monitoring"
+    soilMoisture = "Soil Moisture"
+    temperature = "Temperature"
+    humidity = "Humidity"
+    phLabel = "pH · Phase 2 sensor"
+    lastUpdatedTemplate = "Last updated %s"
 
-    profileTitle = "Profile",
-    profileMyCrops = "My Crops",
-    profileMyFarm = "My Farm",
-    profileMyEquipment = "My Equipment (IoT)",
-    profileMyDocuments = "My Documents",
-    profileFarmSizeTemplate = "%s acres",
-    profileNoDocuments = "No documents uploaded yet.",
-)
+    diseaseDetectionTitle = "Disease Detection"
+    scanLeaf = "Scan a leaf"
+    choosePhoto = "Choose a photo from your gallery"
+    analyzingPhoto = "Analyzing your photo…"
+    confidenceTemplate = "%d%% confidence"
 
-val HindiStrings = AppStrings(
-    online = "ऑनलाइन",
-    offline = "ऑफ़लाइन",
-    settings = "सेटिंग्स",
-    back = "वापस",
-    logOut = "लॉग आउट",
+    alertsTitle = "Alerts"
+    alertsEmpty = "No alerts yet — you'll see risk changes and crop scan results here."
 
-    riskLow = "कम",
-    riskMedium = "मध्यम",
-    riskHigh = "उच्च",
-    riskNotAssessed = "मूल्यांकन नहीं",
+    voiceAssistantTitle = "KrishiNirnay AI"
+    chatbotSubtitle = "Your farming assistant"
+    chatbotWelcome = "Namaste Kisan, how can I help you today?"
+    chatbotPlaceholder = "Ask about your field…"
+    chatbotFallback = "Sorry, I couldn't reach the server just now. Please try again in a moment."
+    chatbotListen = "Listen"
+    chatbotSpeak = "Speak"
+    chatbotMicPermissionDenied = "Microphone permission is needed for voice input."
+    chatbotSend = "Send"
+    chatbotStop = "Stop"
+    chatbotRetry = "Retry"
+    chatbotCopy = "Copy"
+    chatbotCopied = "Copied"
+    chatbotClearChat = "Clear chat"
+    chatbotThinking = "KrishiNirnay AI is thinking..."
+    localAiStopped = "Stopped."
+    contentDescOpenChatbot = "Open chatbot"
+    chatbotChipWeather = "Weather?"
+    chatbotChipSoilMoisture = "Soil moisture?"
+    chatbotChipWhatToDo = "What should I do?"
+    chatbotChipSchemes = "Schemes?"
+    chatbotWeatherReplyTemplate = "Rain chance in the next %s hours is %d%%. Wind speed is %d km/h."
+    chatbotSoilMoistureReplyTemplate = "Your soil moisture is %.1f%% — %s."
+    chatbotSoilStatusDeficient = "Deficient"
+    chatbotSoilStatusTrendingLow = "Trending Low"
+    chatbotSoilStatusHealthy = "Healthy"
+    chatbotSoilStatusUnknown = "Not assessed"
+    chatbotAdviceIrrigateNowTemplate = "Irrigate today for about %d minutes."
+    chatbotAdviceIrrigateSoonTemplate = "Plan to irrigate within the next day for about %d minutes."
+    chatbotAdviceNoIrrigationNeeded = "No irrigation needed today — conditions are healthy."
+    chatbotAdviceNotEnoughData = "Not enough data yet — check back after the first reading."
+    chatbotSchemesReplyTemplate = "Based on your farm, these schemes may help: %s"
+    chatbotFallbackHelp = "I can help with soil moisture, weather, irrigation advice, and government schemes — tap a suggestion below or ask me about one of those!"
 
-    timeJustNow = "अभी अभी",
-    timeSecondsAgoTemplate = "%d सेकंड पहले",
-    timeMinutesAgoTemplate = "%d मिनट पहले",
-    timeHoursAgoTemplate = "%d घंटे पहले",
-    timeDaysAgoTemplate = "%d दिन पहले",
-    timeNever = "कभी नहीं",
+    settingsDataSource = "Data source"
+    settingsDataSourceDescription = "Mock Mode is the default — fully offline, evolving demo data. Switch to Live Mode once a real ESP32 device and Firebase project are connected."
+    settingsLanguage = "Language"
+    settingsModeMock = "Mock"
+    settingsModeLive = "Live"
+    settingsLanguageEnglish = "English"
+    settingsLanguageHindi = "हिंदी"
 
-    recommendationIrrigateSevere = "तुरंत सिंचाई करें — मिट्टी की नमी बेहद कम है और तापमान अधिक है।",
-    recommendationIrrigateWaterHigh = "तुरंत सिंचाई करें — मिट्टी की नमी बेहद कम है।",
-    recommendationShadeOrIrrigateHeat = "अधिक तापमान की भरपाई के लिए छाया दें या सिंचाई करें।",
-    recommendationReviewCropHealthHigh = "फसल स्वास्थ्य जोखिम अधिक है — नवीनतम स्कैन देखें और उपचार पर विचार करें।",
-    recommendationPlanIrrigationSoon = "अगले दिन के भीतर सिंचाई की योजना बनाएं — मिट्टी की नमी घट रही है।",
-    recommendationMonitorTemperature = "तापमान पर नज़र रखें — स्थितियाँ सामान्य से अधिक गर्म हैं।",
-    recommendationReviewCropHealthModerate = "फसल स्वास्थ्य पर नज़र रखें — नवीनतम स्कैन में मध्यम चिंता दिखी है।",
-    recommendationHealthyRange = "मिट्टी की नमी और तापमान स्वस्थ सीमा में हैं। आज किसी कार्रवाई की आवश्यकता नहीं है।",
-    recommendationNotEnoughData = "अभी सिफारिश करने के लिए पर्याप्त डेटा नहीं है।",
+    loginTagline = "Smart field monitoring for every farmer"
+    loginEmail = "Email"
+    loginPassword = "Password"
+    loginSubmit = "Log In"
+    loginDemoHint = "Using demo? Try demo@krishinirnay.app"
+    loginCreateAccount = "Create Account"
+    loginForgotPassword = "Forgot Password?"
+    loginResetEmailSent = "Password reset email sent — check your inbox."
+    registerTitle = "Create your account"
+    registerSubtitle = "Join KrishiNirnay for smart field monitoring"
+    registerFirstName = "First Name"
+    registerLastName = "Last Name"
+    registerConfirmPassword = "Confirm Password"
+    registerMobile = "Mobile Number"
+    registerSubmit = "Create Account"
+    registerAlreadyHaveAccount = "Already have an account? Log in"
+    registerErrorNameRequired = "Please enter your name"
+    registerErrorInvalidEmail = "Please enter a valid email"
+    registerErrorPasswordTooShort = "Password must be at least 6 characters"
+    registerErrorPasswordMismatch = "Passwords do not match"
+    registerErrorInvalidMobile = "Please enter a valid 10-digit mobile number"
 
-    reasonSoilMoistureHighTemplate = "मिट्टी की नमी %.1f%% पर बेहद कम है",
-    reasonSoilMoistureMediumTemplate = "मिट्टी की नमी %.1f%% पर घट रही है",
-    reasonSoilMoistureHealthyTemplate = "मिट्टी की नमी %.1f%% पर स्वस्थ सीमा में है",
-    reasonModelPredictionTemplate = "ऑन-डिवाइस मॉडल %s जल-तनाव जोखिम का अनुमान %d%% विश्वास के साथ लगाता है",
-    reasonTemperatureHighTemplate = "तापमान %.1f°C उच्च-जोखिम सीमा पर या उससे ऊपर है",
-    reasonTemperatureMediumTemplate = "तापमान %.1f°C सामान्य से अधिक गर्म है",
-    reasonTemperatureHealthyTemplate = "तापमान %.1f°C स्थिर और सीमा के भीतर है",
-    reasonCropHealthNotAssessed = "फसल स्वास्थ्य का अभी तक मूल्यांकन नहीं हुआ — रोग पहचान में पत्ती स्कैन करें",
-    reasonCropHealthAssessedTemplate = "नवीनतम फसल स्कैन (%s) में %s जोखिम दिखा",
-    reasonDeviceOffline = "डिवाइस ऑफ़लाइन है — अंतिम सिंक की गई रीडिंग दिखाई जा रही है",
+    advisoryTitle = "Crop Advisory"
+    advisoryAiAdvice = "AI Advice"
+    advisoryRecommendedTasks = "Current Recommendations"
+    advisoryTaskIrrigate = "Irrigate"
+    advisoryTaskPestControl = "Pest Control"
+    advisoryTaskFertilizer = "Fertilizer Dose"
+    advisoryTaskSpraySchedule = "Spray Schedule"
+    advisoryIrrigateHighTemplate = "Soil moisture is %d%%. Irrigate within 12–24 hours."
+    advisoryIrrigateLowTemplate = "Soil moisture is healthy at %d%%. No irrigation needed today."
+    advisoryPestWithDiseaseTemplate = "Signs of %s detected — apply the recommended treatment."
+    advisoryPestElevated = "Crop health risk is elevated — inspect leaves for pests or disease."
+    advisoryPestNone = "No pest or disease risk detected — keep monitoring weekly."
 
-    navHome = "होम",
-    navAdvisory = "सलाह",
-    navWeather = "मौसम",
-    navAlerts = "अलर्ट",
-    navProfile = "प्रोफाइल",
+    weatherTitle = "Weather Forecast"
+    weatherToday = "Today"
+    weatherThreeDay = "3 Days"
+    weatherSevenDay = "7 Days"
+    weatherRainChance = "Chance of Rain"
+    weatherWind = "Wind"
+    weatherFeelsLike = "Feels like"
+    weatherUvIndex = "UV Index"
+    weatherConditionSunny = "Sunny"
+    weatherConditionPartlyCloudy = "Partly Cloudy"
+    weatherConditionCloudy = "Cloudy"
+    weatherConditionRain = "Rain"
+    weatherConditionStorm = "Storm"
+    weatherRainInTemplate = "Rain expected in %s hours"
+    weatherUnavailableMessage = "Weather data is currently unavailable. Add your farm location in Farm Setup to see it here."
+    weatherVisibility = "Visibility"
+    weatherPressure = "Pressure"
+    weatherFarmingTips = "Farming Tips"
+    weatherTipRainLikely = "Rain likely today"
+    weatherTipGoodForIrrigation = "Low rain chance — a good time for irrigation"
+    weatherTipHighHumidityDisease = "High humidity may increase disease risk — check your crop"
+    weatherTipHighWindSpraying = "High wind — avoid spraying pesticides today"
 
-    dashboardGreeting = "नमस्ते, किसान!",
-    dashboardOverallRisk = "समग्र खेत जोखिम",
-    dashboardGatheringReading = "पहली रीडिंग एकत्र की जा रही है…",
-    dashboardViewFullAnalysis = "पूरा AI विश्लेषण देखें →",
-    dashboardWaterStress = "जल तनाव",
-    dashboardHeat = "गर्मी",
-    dashboardCropHealth = "फसल स्वास्थ्य",
-    dashboardDeviceOnline = "डिवाइस ऑनलाइन",
-    dashboardDeviceOffline = "डिवाइस ऑफ़लाइन",
-    dashboardSyncedTemplate = "%s सिंक हुआ",
-    dashboardQuickAccess = "जल्दी पहुंच",
-    dashboardQaAdvisory = "फसल सलाह",
-    dashboardQaMonitoring = "खेत सेंसर",
-    dashboardQaSchemes = "सरकारी योजनाएं",
+    schemesTitle = "Government Schemes"
+    schemesSubtitle = "Schemes suitable for you"
+    schemesViewDetails = "View Details"
+    schemesHideDetails = "Hide Details"
+    schemesEligibilityLabel = "Eligibility"
+    schemesLastVerified = "Last verified"
+    schemesUnavailable = "No matching government schemes right now — this depends on your farm location, crop, and land size in your profile."
+    schemesWhyEligible = "Why you qualify:"
 
-    monitoringTitle = "लाइव मॉनिटरिंग",
-    soilMoisture = "मिट्टी की नमी",
-    temperature = "तापमान",
-    humidity = "आर्द्रता",
-    phLabel = "pH · फेज़ 2 सेंसर",
-    lastUpdatedTemplate = "%s को अपडेट किया गया",
+    profileTitle = "Profile"
+    profileMyCrops = "My Crops"
+    profileMyFarm = "My Farm"
+    profileMyEquipment = "My Equipment (IoT)"
+    profileMyDocuments = "My Documents"
+    profileFarmSizeTemplate = "%s acres"
+    profileNoDocuments = "No documents uploaded yet."
 
-    diseaseDetectionTitle = "रोग पहचान",
-    scanLeaf = "पत्ती स्कैन करें",
-    choosePhoto = "गैलरी से फोटो चुनें",
-    analyzingPhoto = "आपकी फोटो का विश्लेषण हो रहा है…",
-    confidenceTemplate = "%d%% विश्वास",
+    recommendationTreatPestDetected = "A pest was detected — inspect the crop and treat as soon as possible."
+    recommendationMonitorPestRisk = "A pest was detected at low severity — keep monitoring closely."
+    reasonPestNotAssessed = "Pest risk has not been assessed yet — scan a leaf in Pest Detection"
+    reasonPestAssessedTemplate = "Latest pest scan (%s) shows %s risk"
+    reasonRainExpectedSoon = "Rain is expected soon"
 
-    alertsTitle = "अलर्ट",
-    alertsEmpty = "अभी कोई अलर्ट नहीं — यहां जोखिम में बदलाव और फसल स्कैन परिणाम दिखेंगे।",
+    timingImmediate = "Right now"
+    timingThisEvening = "This evening"
+    timingWithin24Hours = "Within 24 hours"
+    timingWithin3Days = "Within 3 days"
+    timingNoActionNeeded = "No action needed today"
+    benefitPreventCropLoss = "Acting now can help prevent crop loss."
+    benefitImprovedYield = "Acting on this can help improve your yield."
+    benefitHealthyGrowthContinues = "Your crop should keep growing healthily."
+    benefitUnknown = "Benefit not yet known — check back after the next reading."
 
-    voiceAssistantTitle = "वॉइस असिस्टेंट",
-    chatbotWelcome = "नमस्ते किसान, मैं आपकी क्या मदद कर सकता हूं?",
-    chatbotPlaceholder = "अपने खेत के बारे में पूछें…",
-    chatbotFallback = "क्षमा करें, अभी सर्वर से संपर्क नहीं हो सका। कृपया थोड़ी देर बाद पुनः प्रयास करें।",
-    chatbotListen = "सुनें",
-    chatbotSpeak = "बोलें",
-    chatbotMicPermissionDenied = "आवाज़ इनपुट के लिए माइक्रोफ़ोन अनुमति आवश्यक है।",
-    chatbotSend = "भेजें",
-    contentDescOpenChatbot = "चैटबॉट खोलें",
-    chatbotChipWeather = "मौसम?",
-    chatbotChipSoilMoisture = "मिट्टी की नमी?",
-    chatbotChipWhatToDo = "मुझे क्या करना चाहिए?",
-    chatbotChipSchemes = "योजनाएं?",
-    chatbotWeatherReplyTemplate = "अगले %s घंटों में बारिश की संभावना %d%% है। हवा की गति %d किमी/घंटा है।",
-    chatbotSoilMoistureReplyTemplate = "आपकी मिट्टी की नमी %.1f%% है — %s।",
-    chatbotSoilStatusDeficient = "कम",
-    chatbotSoilStatusTrendingLow = "घट रही है",
-    chatbotSoilStatusHealthy = "स्वस्थ",
-    chatbotSoilStatusUnknown = "मूल्यांकन नहीं",
-    chatbotAdviceIrrigateNowTemplate = "आज लगभग %d मिनट सिंचाई करें।",
-    chatbotAdviceIrrigateSoonTemplate = "अगले दिन के भीतर लगभग %d मिनट सिंचाई की योजना बनाएं।",
-    chatbotAdviceNoIrrigationNeeded = "आज सिंचाई की आवश्यकता नहीं है — स्थितियां स्वस्थ हैं।",
-    chatbotAdviceNotEnoughData = "अभी तक पर्याप्त डेटा नहीं है — पहली रीडिंग के बाद फिर से देखें।",
-    chatbotSchemesReplyTemplate = "आपके खेत के लिए ये योजनाएं मददगार हो सकती हैं: %s",
-    chatbotFallbackHelp = "मैं मिट्टी की नमी, मौसम, सिंचाई सलाह और सरकारी योजनाओं में मदद कर सकता हूं — नीचे दिए सुझाव पर टैप करें या इनमें से किसी के बारे में पूछें!",
+    fertilizerNutrientNitrogenName = "Nitrogen"
+    fertilizerNutrientPhosphorusName = "Phosphorus"
+    fertilizerNutrientPotassiumName = "Potassium"
+    fertilizerTypeUreaName = "Urea"
+    fertilizerTypeDapName = "DAP"
+    fertilizerTypeMopName = "MOP"
+    fertilizerRecommendedTemplate = "%s is low in your soil. Consider %s, approximately %s — %s."
+    fertilizerSafetyNote = "This is a general estimate, not an exact dose. Confirm the amount with your local Krishi Vigyan Kendra or a real soil-test card before applying."
+    fertilizerNoActionNeeded = "Soil nutrients look sufficient right now — no fertilizer action needed."
+    fertilizerInsufficientData = "More soil information (nitrogen, phosphorus, potassium) is needed before a fertilizer recommendation can be made."
 
-    settingsDataSource = "डेटा स्रोत",
-    settingsDataSourceDescription = "मॉक मोड डिफ़ॉल्ट है — पूरी तरह ऑफ़लाइन, बदलता डेमो डेटा। असली ESP32 डिवाइस और Firebase प्रोजेक्ट जुड़ने पर लाइव मोड पर स्विच करें।",
-    settingsLanguage = "भाषा",
-    settingsModeMock = "मॉक",
-    settingsModeLive = "लाइव",
-    settingsLanguageEnglish = "English",
-    settingsLanguageHindi = "हिंदी",
+    settingsLanguageMarathi = "मराठी"
+    settingsAiMode = "AI Mode"
+    settingsAiModeLocal = "Local model"
+    settingsAiModeOffline = "Offline AI"
+    settingsAiModeUnavailable = "Local model unavailable"
+    settingsAiModeLoading = "Checking AI status..."
+    settingsAiModeModelMissing = "Local AI model not installed"
+    settingsAiModeGenerating = "Local AI is thinking..."
+    aiStatusOnDeviceReady = "On-device AI Ready"
+    aiStatusServerReady = "Local Server AI Ready"
+    aiStatusOffline = "Offline AI"
+    localAiGenerationFailed = "Local AI could not process this request"
+    localAiBothUnavailable = "Local AI is unavailable. Download the on-device AI model or connect to the AI server."
+    localAiDataUnavailable = "This information is not available yet."
+    aiDiagnosticsTitle = "AI Diagnostics"
+    aiDiagnosticsRunHint = "Check AI connection"
+    aiDiagnosticsProvider = "AI Provider"
+    aiDiagnosticsServer = "Server"
+    localAiDiagnosticsRun = "Check AI connection"
+    localAiDiagnosticsRunning = "Checking connection..."
+    localAiDiagnosticsServerReachable = "Server reachable"
+    localAiDiagnosticsOllamaAvailable = "Ollama available"
+    localAiDiagnosticsEnglishModel = "English model"
+    localAiDiagnosticsHindiModel = "Hindi model"
+    localAiDiagnosticsMarathiModel = "Marathi model"
+    localAiDiagnosticsChatEndpointAvailable = "Chat endpoint available"
+    localAiDiagnosticsYes = "Yes"
+    localAiDiagnosticsNo = "No"
+    settingsCloudFallback = "Allow cloud AI as backup"
+    settingsCloudFallbackDescription = "Off by default. When on, if the local AI can't answer, this app may send your field summary to an online AI service."
+    simulationTitle = "Sensor Simulation"
+    simulationDescription = "Test the app without physical sensors — apply a scenario to see how the Decision Engine reacts."
+    simulationLiveModeWarning = "Switch to Mock Mode in Settings to use simulation — these controls do nothing on real sensor data."
+    simulationDrySoil = "Dry Soil"
+    simulationNormalSoil = "Normal Soil"
+    simulationWetSoil = "Wet Soil"
+    simulationHighTemp = "High Temperature"
+    simulationLowTemp = "Low Temperature"
+    simulationHighHumidity = "High Humidity"
+    simulationLowHumidity = "Low Humidity"
+    simulationIrrigate = "Simulate Irrigation"
+    simulationDisconnect = "Simulate Sensor Unavailable"
+    simulationReconnect = "Reconnect Sensor"
+    settingsOpenSimulation = "Sensor Simulation (Testing)"
 
-    loginTagline = "हर किसान के लिए स्मार्ट खेत निगरानी",
-    loginEmail = "ईमेल",
-    loginPassword = "पासवर्ड",
-    loginSubmit = "लॉग इन",
-    loginDemoHint = "डेमो आज़मा रहे हैं? demo@krishinirnay.app इस्तेमाल करें",
+    settingsSectionProfile = "Profile"
+    settingsSectionLanguageVoice = "Language & Voice"
+    settingsSectionAdvanced = "Advanced"
+    settingsFarmerProfile = "Farmer Profile"
+    settingsFarmInformation = "Farm Information"
+    settingsVoiceAssistant = "Voice Assistant"
+    settingsVoiceAssistantDescription = "Let KrishiNirnay read replies aloud and listen for spoken questions."
+    profileCompletionTemplate = "Profile %d%% complete"
+    profileCompletionMissingLabel = "Missing:"
+    profileCompletionComplete = "Your profile is complete"
 
-    advisoryTitle = "फसल सलाह",
-    advisoryAiAdvice = "AI सलाह",
-    advisoryRecommendedTasks = "वर्तमान अनुशंसाएं",
-    advisoryTaskIrrigate = "सिंचाई करें",
-    advisoryTaskPestControl = "कीट नियंत्रण",
-    advisoryTaskFertilizer = "खाद की मात्रा",
-    advisoryTaskSpraySchedule = "स्प्रे का शेड्यूल",
-    advisoryIrrigateHighTemplate = "मिट्टी की नमी %d%% है। 12–24 घंटों के भीतर सिंचाई करें।",
-    advisoryIrrigateLowTemplate = "मिट्टी की नमी %d%% पर स्वस्थ है। आज सिंचाई की आवश्यकता नहीं है।",
-    advisoryPestWithDiseaseTemplate = "%s के लक्षण मिले — अनुशंसित उपचार लागू करें।",
-    advisoryPestElevated = "फसल स्वास्थ्य जोखिम अधिक है — कीट या रोग के लिए पत्तियों की जांच करें।",
-    advisoryPestNone = "कोई कीट या रोग जोखिम नहीं मिला — साप्ताहिक निगरानी जारी रखें।",
-    advisoryFertilizerDetail = "इस विकास चरण के लिए अनुशंसित NPK मिश्रण डालें।",
+    onboardingStepOfTemplate = "Step %1\$d of %2\$d"
+    onboardingContinue = "Continue"
+    onboardingBack = "Back"
+    onboardingWelcomeTitle = "Welcome to KrishiNirnay"
+    onboardingWelcomeSubtitle = "Your smart farming companion. Let's set up your farm — it only takes a couple of minutes."
+    onboardingPersonalStepTitle = "About You"
+    onboardingFullName = "Full Name"
+    onboardingMobileNumber = "Mobile Number"
+    onboardingAlternateMobile = "Alternate Mobile Number"
+    onboardingGender = "Gender"
+    onboardingAddress = "Address"
+    onboardingFarmStepTitle = "Your Farm"
+    onboardingOwnershipType = "Land Ownership"
+    onboardingIrrigationAvailable = "Irrigation Available"
+    onboardingWaterSource = "Water Source"
+    onboardingCropStepTitle = "Your Crop"
+    onboardingPrimaryCrop = "Main Crop"
+    onboardingSecondaryCrop = "Second Crop"
+    onboardingCropStage = "Crop Stage"
+    onboardingPreferencesStepTitle = "Your Preferences"
+    onboardingFarmingExperience = "Years of Farming Experience"
+    onboardingVoiceAssistance = "Enable Voice Assistance"
+    onboardingConfirmationStepTitle = "Confirm Your Details"
+    onboardingConfirmationFarmer = "Farmer"
+    onboardingConfirmationFarm = "Farm"
+    onboardingConfirmationLocation = "Location"
+    onboardingConfirmationCrop = "Crop"
+    onboardingConfirmationIrrigation = "Irrigation"
+    onboardingConfirmationLanguage = "Language"
+    onboardingSaveProfile = "Save Farmer Profile"
+    onboardingRequiredFieldsMissing = "Please fill in the required fields marked with *"
+    onboardingOptionalLabel = "optional"
 
-    weatherTitle = "मौसम पूर्वानुमान",
-    weatherToday = "आज",
-    weatherThreeDay = "3 दिन",
-    weatherSevenDay = "7 दिन",
-    weatherRainChance = "बारिश की संभावना",
-    weatherWind = "हवा",
-    weatherRainInTemplate = "अगले %s घंटों में बारिश की संभावना",
+    farmSetupTitle = "Farm Setup"
+    farmSetupLocationSection = "Location"
+    farmSetupState = "State"
+    farmSetupDistrict = "District"
+    farmSetupTaluka = "Taluka"
+    farmSetupVillage = "Village"
+    farmSetupCoordinatesSection = "Exact Location (Optional)"
+    farmSetupCoordinatesHint = "Adding coordinates gives more accurate weather. Find them by searching your village on Google Maps and long-pressing the pin."
+    farmSetupLatitude = "Latitude"
+    farmSetupLongitude = "Longitude"
+    farmSetupAcres = "Farm size (acres)"
+    farmSetupSoilType = "Soil type"
+    farmSetupCrop = "Crop"
+    farmSetupCropVariety = "Crop variety"
+    farmSetupIrrigationMethod = "Irrigation / farming method"
+    farmSetupIrrigationRainFed = "Rain-fed"
+    farmSetupIrrigationIrrigated = "Irrigated"
+    farmSetupIrrigationDrip = "Drip"
+    farmSetupIrrigationSprinkler = "Sprinkler"
+    farmSetupIrrigationOther = "Other"
+    farmSetupSave = "Save"
+    farmSetupSaved = "Farm details saved"
 
-    schemesTitle = "सरकारी योजनाएं",
-    schemesSubtitle = "आपके लिए उपयुक्त योजनाएं",
-    schemesViewDetails = "विवरण देखें",
-    schemesHideDetails = "विवरण छुपाएं",
-    schemesEligibilityLabel = "पात्रता",
+    dataSourceLive = "Live"
+    dataSourceCached = "Cached — showing last known data"
+    dataSourceMock = "Demo data"
+    dataSourceUnavailable = "Not available yet"
+    dataSourceLoading = "Loading..."
+    dataSourceNoData = "No data today"
+    weatherLoading = "Loading live weather..."
+    weatherFetchFailed = "Could not load live weather. Check your connection and try again."
+    weatherNoLocation = "Add your farm location in Farm Setup to see live weather here."
+    marketLoading = "Loading live market prices..."
+    marketNoDataToday = "No market data available today for your crop and state."
+    marketFetchFailed = "Could not load live market prices. Check your connection and try again."
+    actionRetry = "Retry"
+    marketChangeCropOrLocation = "Change crop or location"
+    marketSameDistrict = "Your district"
+    marketSameState = "Nearest reporting mandi in your state"
+    marketViewMoreMarkets = "View more markets"
+    marketTitle = "Market Price"
+    marketUnavailable = "Market prices are not connected yet — no live data source is configured."
+    marketLatestAvailable = "Latest available mandi price"
+    marketModalLabel = "Modal"
+    marketMinLabel = "Min"
+    marketMaxLabel = "Max"
+    marketDateLabel = "As of"
+    marketOtherMandis = "Other mandis"
+    marketTrendRising = "Rising"
+    marketTrendFalling = "Falling"
+    marketTrendStable = "Stable"
+    marketNoDataTodayTemplate = "No market data available today for %s in %s."
+    marketBestAvailable = "Best available mandi"
+    marketPerQuintal = "/ quintal"
+    marketAvgLabel = "Avg"
+    marketLastUpdatedTemplate = "Updated %s"
+}
 
-    profileTitle = "प्रोफाइल",
-    profileMyCrops = "मेरी फसलें",
-    profileMyFarm = "मेरा खेत",
-    profileMyEquipment = "मेरे उपकरण (IoT)",
-    profileMyDocuments = "मेरे दस्तावेज़",
-    profileFarmSizeTemplate = "%s एकड़",
-    profileNoDocuments = "अभी तक कोई दस्तावेज़ अपलोड नहीं किया गया।",
-)
+val HindiStrings = AppStrings().apply {
+    online = "ऑनलाइन"
+    offline = "ऑफ़लाइन"
+    settings = "सेटिंग्स"
+    back = "वापस"
+    logOut = "लॉग आउट"
+
+    riskLow = "कम"
+    riskMedium = "मध्यम"
+    riskHigh = "उच्च"
+    riskNotAssessed = "मूल्यांकन नहीं"
+
+    timeJustNow = "अभी अभी"
+    timeSecondsAgoTemplate = "%d सेकंड पहले"
+    timeMinutesAgoTemplate = "%d मिनट पहले"
+    timeHoursAgoTemplate = "%d घंटे पहले"
+    timeDaysAgoTemplate = "%d दिन पहले"
+    timeNever = "कभी नहीं"
+
+    recommendationIrrigateSevere = "तुरंत सिंचाई करें — मिट्टी की नमी बेहद कम है और तापमान अधिक है।"
+    recommendationIrrigateWaterHigh = "तुरंत सिंचाई करें — मिट्टी की नमी बेहद कम है।"
+    recommendationShadeOrIrrigateHeat = "अधिक तापमान की भरपाई के लिए छाया दें या सिंचाई करें।"
+    recommendationReviewCropHealthHigh = "फसल स्वास्थ्य जोखिम अधिक है — नवीनतम स्कैन देखें और उपचार पर विचार करें।"
+    recommendationPlanIrrigationSoon = "अगले दिन के भीतर सिंचाई की योजना बनाएं — मिट्टी की नमी घट रही है।"
+    recommendationMonitorTemperature = "तापमान पर नज़र रखें — स्थितियाँ सामान्य से अधिक गर्म हैं।"
+    recommendationReviewCropHealthModerate = "फसल स्वास्थ्य पर नज़र रखें — नवीनतम स्कैन में मध्यम चिंता दिखी है।"
+    recommendationHealthyRange = "मिट्टी की नमी और तापमान स्वस्थ सीमा में हैं। आज किसी कार्रवाई की आवश्यकता नहीं है।"
+    recommendationNotEnoughData = "अभी सिफारिश करने के लिए पर्याप्त डेटा नहीं है।"
+
+    reasonSoilMoistureHighTemplate = "मिट्टी की नमी %.1f%% पर बेहद कम है"
+    reasonSoilMoistureMediumTemplate = "मिट्टी की नमी %.1f%% पर घट रही है"
+    reasonSoilMoistureHealthyTemplate = "मिट्टी की नमी %.1f%% पर स्वस्थ सीमा में है"
+    reasonModelPredictionTemplate = "ऑन-डिवाइस मॉडल %s जल-तनाव जोखिम का अनुमान %d%% विश्वास के साथ लगाता है"
+    reasonTemperatureHighTemplate = "तापमान %.1f°C उच्च-जोखिम सीमा पर या उससे ऊपर है"
+    reasonTemperatureMediumTemplate = "तापमान %.1f°C सामान्य से अधिक गर्म है"
+    reasonTemperatureHealthyTemplate = "तापमान %.1f°C स्थिर और सीमा के भीतर है"
+    reasonCropHealthNotAssessed = "फसल स्वास्थ्य का अभी तक मूल्यांकन नहीं हुआ — रोग पहचान में पत्ती स्कैन करें"
+    reasonCropHealthAssessedTemplate = "नवीनतम फसल स्कैन (%s) में %s जोखिम दिखा"
+    reasonDeviceOffline = "डिवाइस ऑफ़लाइन है — अंतिम सिंक की गई रीडिंग दिखाई जा रही है"
+
+    navHome = "होम"
+    navAdvisory = "सलाह"
+    navWeather = "मौसम"
+    navAlerts = "अलर्ट"
+    navAssistant = "एआई सहायक"
+    navProfile = "प्रोफाइल"
+
+    dashboardGreeting = "नमस्ते, किसान!"
+    dashboardGreetingMorning = "सुप्रभात, %s"
+    dashboardGreetingAfternoon = "नमस्कार, %s"
+    dashboardGreetingEvening = "शुभ संध्या, %s"
+    dashboardLiveToday = "आज का लाइव डेटा अपडेट हो चुका है"
+    dashboardShowingLastAvailable = "अंतिम उपलब्ध जानकारी दिखाई जा रही है"
+    dashboardOverallRisk = "समग्र खेत जोखिम"
+    dashboardGatheringReading = "पहली रीडिंग एकत्र की जा रही है…"
+    dashboardViewFullAnalysis = "पूरा AI विश्लेषण देखें →"
+    dashboardWhyLabel = "क्यों"
+    dashboardFertilizerLabel = "खाद"
+    feedbackDidYouFollow = "क्या आपने यह सलाह मानी?"
+    feedbackYes = "हाँ"
+    feedbackNo = "नहीं"
+    feedbackPartially = "आंशिक रूप से"
+    feedbackWhatHappened = "क्या हुआ?"
+    feedbackThanks = "आपकी प्रतिक्रिया के लिए धन्यवाद!"
+    feedbackResultImproved = "फसल में सुधार हुआ"
+    feedbackResultNoChange = "कोई बदलाव नहीं"
+    feedbackResultWorse = "फसल खराब हुई"
+    feedbackResultOther = "अन्य"
+    dashboardWaterStress = "जल तनाव"
+    dashboardHeat = "गर्मी"
+    dashboardCropHealth = "फसल स्वास्थ्य"
+    dashboardDeviceOnline = "डिवाइस ऑनलाइन"
+    dashboardDeviceOffline = "डिवाइस ऑफ़लाइन"
+    dashboardSyncedTemplate = "%s सिंक हुआ"
+    dashboardQuickAccess = "जल्दी पहुंच"
+    dashboardQaAdvisory = "फसल सलाह"
+    dashboardQaMonitoring = "खेत सेंसर"
+    dashboardQaSchemes = "सरकारी योजनाएं"
+    dashboardQaMarket = "मंडी भाव"
+    dashboardQaDisease = "रोग जांच"
+    dashboardQaAssistant = "एआई सहायक"
+    dashboardQaFarmSetup = "फार्म सेटअप"
+
+    monitoringTitle = "लाइव मॉनिटरिंग"
+    soilMoisture = "मिट्टी की नमी"
+    temperature = "तापमान"
+    humidity = "आर्द्रता"
+    phLabel = "pH · फेज़ 2 सेंसर"
+    lastUpdatedTemplate = "%s को अपडेट किया गया"
+
+    diseaseDetectionTitle = "रोग पहचान"
+    scanLeaf = "पत्ती स्कैन करें"
+    choosePhoto = "गैलरी से फोटो चुनें"
+    analyzingPhoto = "आपकी फोटो का विश्लेषण हो रहा है…"
+    confidenceTemplate = "%d%% विश्वास"
+
+    alertsTitle = "अलर्ट"
+    alertsEmpty = "अभी कोई अलर्ट नहीं — यहां जोखिम में बदलाव और फसल स्कैन परिणाम दिखेंगे।"
+
+    voiceAssistantTitle = "कृषिनिर्णय एआई"
+    chatbotSubtitle = "आपका कृषि सहायक"
+    chatbotWelcome = "नमस्ते किसान, मैं आपकी क्या मदद कर सकता हूं?"
+    chatbotPlaceholder = "अपने खेत के बारे में पूछें…"
+    chatbotFallback = "क्षमा करें, अभी सर्वर से संपर्क नहीं हो सका। कृपया थोड़ी देर बाद पुनः प्रयास करें।"
+    chatbotListen = "सुनें"
+    chatbotSpeak = "बोलें"
+    chatbotMicPermissionDenied = "आवाज़ इनपुट के लिए माइक्रोफ़ोन अनुमति आवश्यक है।"
+    chatbotSend = "भेजें"
+    chatbotStop = "रोकें"
+    chatbotRetry = "फिर कोशिश करें"
+    chatbotCopy = "कॉपी करें"
+    chatbotCopied = "कॉपी हो गया"
+    chatbotClearChat = "चैट साफ़ करें"
+    chatbotThinking = "कृषिनिर्णय एआई सोच रहा है..."
+    localAiStopped = "रोक दिया गया।"
+    contentDescOpenChatbot = "चैटबॉट खोलें"
+    chatbotChipWeather = "मौसम?"
+    chatbotChipSoilMoisture = "मिट्टी की नमी?"
+    chatbotChipWhatToDo = "मुझे क्या करना चाहिए?"
+    chatbotChipSchemes = "योजनाएं?"
+    chatbotWeatherReplyTemplate = "अगले %s घंटों में बारिश की संभावना %d%% है। हवा की गति %d किमी/घंटा है।"
+    chatbotSoilMoistureReplyTemplate = "आपकी मिट्टी की नमी %.1f%% है — %s।"
+    chatbotSoilStatusDeficient = "कम"
+    chatbotSoilStatusTrendingLow = "घट रही है"
+    chatbotSoilStatusHealthy = "स्वस्थ"
+    chatbotSoilStatusUnknown = "मूल्यांकन नहीं"
+    chatbotAdviceIrrigateNowTemplate = "आज लगभग %d मिनट सिंचाई करें।"
+    chatbotAdviceIrrigateSoonTemplate = "अगले दिन के भीतर लगभग %d मिनट सिंचाई की योजना बनाएं।"
+    chatbotAdviceNoIrrigationNeeded = "आज सिंचाई की आवश्यकता नहीं है — स्थितियां स्वस्थ हैं।"
+    chatbotAdviceNotEnoughData = "अभी तक पर्याप्त डेटा नहीं है — पहली रीडिंग के बाद फिर से देखें।"
+    chatbotSchemesReplyTemplate = "आपके खेत के लिए ये योजनाएं मददगार हो सकती हैं: %s"
+    chatbotFallbackHelp = "मैं मिट्टी की नमी, मौसम, सिंचाई सलाह और सरकारी योजनाओं में मदद कर सकता हूं — नीचे दिए सुझाव पर टैप करें या इनमें से किसी के बारे में पूछें!"
+
+    settingsDataSource = "डेटा स्रोत"
+    settingsDataSourceDescription = "मॉक मोड डिफ़ॉल्ट है — पूरी तरह ऑफ़लाइन, बदलता डेमो डेटा। असली ESP32 डिवाइस और Firebase प्रोजेक्ट जुड़ने पर लाइव मोड पर स्विच करें।"
+    settingsLanguage = "भाषा"
+    settingsModeMock = "मॉक"
+    settingsModeLive = "लाइव"
+    settingsLanguageEnglish = "English"
+    settingsLanguageHindi = "हिंदी"
+
+    loginTagline = "हर किसान के लिए स्मार्ट खेत निगरानी"
+    loginEmail = "ईमेल"
+    loginPassword = "पासवर्ड"
+    loginSubmit = "लॉग इन"
+    loginDemoHint = "डेमो आज़मा रहे हैं? demo@krishinirnay.app इस्तेमाल करें"
+    loginCreateAccount = "खाता बनाएं"
+    loginForgotPassword = "पासवर्ड भूल गए?"
+    loginResetEmailSent = "पासवर्ड रीसेट ईमेल भेज दिया गया है — कृपया अपना इनबॉक्स देखें।"
+    registerTitle = "अपना खाता बनाएं"
+    registerSubtitle = "स्मार्ट खेत निगरानी के लिए कृषिनिर्णय से जुड़ें"
+    registerFirstName = "पहला नाम"
+    registerLastName = "उपनाम"
+    registerConfirmPassword = "पासवर्ड की पुष्टि करें"
+    registerMobile = "मोबाइल नंबर"
+    registerSubmit = "खाता बनाएं"
+    registerAlreadyHaveAccount = "पहले से खाता है? लॉग इन करें"
+    registerErrorNameRequired = "कृपया अपना नाम दर्ज करें"
+    registerErrorInvalidEmail = "कृपया एक मान्य ईमेल दर्ज करें"
+    registerErrorPasswordTooShort = "पासवर्ड कम से कम 6 अक्षर का होना चाहिए"
+    registerErrorPasswordMismatch = "पासवर्ड मेल नहीं खाते"
+    registerErrorInvalidMobile = "कृपया एक मान्य 10-अंकीय मोबाइल नंबर दर्ज करें"
+
+    advisoryTitle = "फसल सलाह"
+    advisoryAiAdvice = "AI सलाह"
+    advisoryRecommendedTasks = "वर्तमान अनुशंसाएं"
+    advisoryTaskIrrigate = "सिंचाई करें"
+    advisoryTaskPestControl = "कीट नियंत्रण"
+    advisoryTaskFertilizer = "खाद की मात्रा"
+    advisoryTaskSpraySchedule = "स्प्रे का शेड्यूल"
+    advisoryIrrigateHighTemplate = "मिट्टी की नमी %d%% है। 12–24 घंटों के भीतर सिंचाई करें।"
+    advisoryIrrigateLowTemplate = "मिट्टी की नमी %d%% पर स्वस्थ है। आज सिंचाई की आवश्यकता नहीं है।"
+    advisoryPestWithDiseaseTemplate = "%s के लक्षण मिले — अनुशंसित उपचार लागू करें।"
+    advisoryPestElevated = "फसल स्वास्थ्य जोखिम अधिक है — कीट या रोग के लिए पत्तियों की जांच करें।"
+    advisoryPestNone = "कोई कीट या रोग जोखिम नहीं मिला — साप्ताहिक निगरानी जारी रखें।"
+
+    weatherTitle = "मौसम पूर्वानुमान"
+    weatherToday = "आज"
+    weatherThreeDay = "3 दिन"
+    weatherSevenDay = "7 दिन"
+    weatherRainChance = "बारिश की संभावना"
+    weatherWind = "हवा"
+    weatherFeelsLike = "महसूस होता है"
+    weatherUvIndex = "यूवी सूचकांक"
+    weatherConditionSunny = "धूप"
+    weatherConditionPartlyCloudy = "आंशिक बादल"
+    weatherConditionCloudy = "बादल छाए"
+    weatherConditionRain = "बारिश"
+    weatherConditionStorm = "तूफ़ान"
+    weatherRainInTemplate = "अगले %s घंटों में बारिश की संभावना"
+    weatherUnavailableMessage = "मौसम की जानकारी अभी उपलब्ध नहीं है। इसे यहाँ देखने के लिए फार्म सेटअप में अपना खेत का स्थान जोड़ें।"
+    weatherVisibility = "दृश्यता"
+    weatherPressure = "वायुदाब"
+    weatherFarmingTips = "खेती के लिए सुझाव"
+    weatherTipRainLikely = "आज बारिश होने की संभावना है"
+    weatherTipGoodForIrrigation = "बारिश की संभावना कम है — सिंचाई के लिए अच्छा समय"
+    weatherTipHighHumidityDisease = "अधिक नमी से रोग का खतरा बढ़ सकता है — अपनी फसल जांचें"
+    weatherTipHighWindSpraying = "तेज़ हवा — आज कीटनाशक का छिड़काव न करें"
+
+    schemesTitle = "सरकारी योजनाएं"
+    schemesSubtitle = "आपके लिए उपयुक्त योजनाएं"
+    schemesViewDetails = "विवरण देखें"
+    schemesHideDetails = "विवरण छुपाएं"
+    schemesEligibilityLabel = "पात्रता"
+    schemesLastVerified = "अंतिम सत्यापित"
+    schemesUnavailable = "अभी कोई मेल खाती सरकारी योजना नहीं है — यह आपकी प्रोफ़ाइल में खेत का स्थान, फसल और भूमि आकार पर निर्भर करता है।"
+    schemesWhyEligible = "आप क्यों पात्र हैं:"
+
+    profileTitle = "प्रोफाइल"
+    profileMyCrops = "मेरी फसलें"
+    profileMyFarm = "मेरा खेत"
+    profileMyEquipment = "मेरे उपकरण (IoT)"
+    profileMyDocuments = "मेरे दस्तावेज़"
+    profileFarmSizeTemplate = "%s एकड़"
+    profileNoDocuments = "अभी तक कोई दस्तावेज़ अपलोड नहीं किया गया।"
+
+    recommendationTreatPestDetected = "एक कीट का पता चला है — फसल की जांच करें और जल्द से जल्द उपचार करें।"
+    recommendationMonitorPestRisk = "कम गंभीरता का कीट मिला है — बारीकी से निगरानी जारी रखें।"
+    reasonPestNotAssessed = "कीट जोखिम का अभी तक मूल्यांकन नहीं हुआ — कीट पहचान में पत्ती स्कैन करें"
+    reasonPestAssessedTemplate = "नवीनतम कीट स्कैन (%s) में %s जोखिम दिखा"
+    reasonRainExpectedSoon = "जल्द ही बारिश की संभावना है"
+
+    timingImmediate = "अभी"
+    timingThisEvening = "आज शाम"
+    timingWithin24Hours = "24 घंटों के भीतर"
+    timingWithin3Days = "3 दिनों के भीतर"
+    timingNoActionNeeded = "आज किसी कार्रवाई की आवश्यकता नहीं"
+    benefitPreventCropLoss = "अभी कार्रवाई करने से फसल का नुकसान रोकने में मदद मिल सकती है।"
+    benefitImprovedYield = "इस पर कार्रवाई करने से आपकी उपज बेहतर हो सकती है।"
+    benefitHealthyGrowthContinues = "आपकी फसल स्वस्थ रूप से बढ़ती रहनी चाहिए।"
+    benefitUnknown = "लाभ अभी ज्ञात नहीं है — अगली रीडिंग के बाद देखें।"
+
+    fertilizerNutrientNitrogenName = "नाइट्रोजन"
+    fertilizerNutrientPhosphorusName = "फॉस्फोरस"
+    fertilizerNutrientPotassiumName = "पोटैशियम"
+    fertilizerTypeUreaName = "यूरिया"
+    fertilizerTypeDapName = "डीएपी"
+    fertilizerTypeMopName = "एमओपी"
+    fertilizerRecommendedTemplate = "आपकी मिट्टी में %s की कमी है। %s डालने पर विचार करें, लगभग %s — %s।"
+    fertilizerSafetyNote = "यह एक सामान्य अनुमान है, सटीक मात्रा नहीं। डालने से पहले अपने स्थानीय कृषि विज्ञान केंद्र या असली मिट्टी-परीक्षण कार्ड से मात्रा की पुष्टि करें।"
+    fertilizerNoActionNeeded = "मिट्टी के पोषक तत्व अभी पर्याप्त लग रहे हैं — किसी खाद कार्रवाई की आवश्यकता नहीं है।"
+    fertilizerInsufficientData = "खाद की सिफारिश करने से पहले अधिक मिट्टी जानकारी (नाइट्रोजन, फॉस्फोरस, पोटैशियम) आवश्यक है।"
+
+    settingsLanguageMarathi = "मराठी"
+    settingsAiMode = "एआई मोड"
+    settingsAiModeLocal = "लोकल मॉडल"
+    settingsAiModeOffline = "ऑफ़लाइन एआई"
+    settingsAiModeUnavailable = "लोकल मॉडल उपलब्ध नहीं है"
+    settingsAiModeLoading = "एआई स्थिति जांची जा रही है..."
+    settingsAiModeModelMissing = "लोकल एआई मॉडल इंस्टॉल नहीं है"
+    settingsAiModeGenerating = "लोकल एआई सोच रहा है..."
+    aiStatusOnDeviceReady = "ऑन-डिवाइस एआई तैयार है"
+    aiStatusServerReady = "लोकल सर्वर एआई तैयार है"
+    aiStatusOffline = "एआई ऑफ़लाइन है"
+    localAiGenerationFailed = "लोकल एआई इस सवाल का जवाब नहीं दे सका"
+    localAiBothUnavailable = "लोकल एआई उपलब्ध नहीं है। ऑन-डिवाइस एआई मॉडल डाउनलोड करें या एआई सर्वर से कनेक्ट करें।"
+    localAiDataUnavailable = "इस जानकारी का डेटा अभी उपलब्ध नहीं है।"
+    aiDiagnosticsTitle = "एआई डायग्नोस्टिक्स"
+    aiDiagnosticsRunHint = "एआई कनेक्शन जांचें"
+    aiDiagnosticsProvider = "एआई प्रदाता"
+    aiDiagnosticsServer = "सर्वर"
+    localAiDiagnosticsRun = "एआई कनेक्शन जांचें"
+    localAiDiagnosticsRunning = "कनेक्शन जांचा जा रहा है..."
+    localAiDiagnosticsServerReachable = "सर्वर तक पहुंच है"
+    localAiDiagnosticsOllamaAvailable = "Ollama उपलब्ध है"
+    localAiDiagnosticsEnglishModel = "अंग्रेज़ी मॉडल"
+    localAiDiagnosticsHindiModel = "हिंदी मॉडल"
+    localAiDiagnosticsMarathiModel = "मराठी मॉडल"
+    localAiDiagnosticsChatEndpointAvailable = "चैट एंडपॉइंट उपलब्ध है"
+    localAiDiagnosticsYes = "हां"
+    localAiDiagnosticsNo = "नहीं"
+    settingsCloudFallback = "बैकअप के रूप में क्लाउड एआई की अनुमति दें"
+    settingsCloudFallbackDescription = "डिफ़ॉल्ट रूप से बंद। चालू होने पर, यदि लोकल एआई उत्तर नहीं दे पाता, तो यह ऐप आपके खेत का सारांश एक ऑनलाइन एआई सेवा को भेज सकता है।"
+    simulationTitle = "सेंसर सिमुलेशन"
+    simulationDescription = "बिना भौतिक सेंसर के ऐप का परीक्षण करें — देखें कि डिसीजन इंजन कैसे प्रतिक्रिया करता है।"
+    simulationLiveModeWarning = "सिमुलेशन उपयोग करने के लिए सेटिंग्स में मॉक मोड चुनें — असली सेंसर डेटा पर ये नियंत्रण कुछ नहीं करते।"
+    simulationDrySoil = "सूखी मिट्टी"
+    simulationNormalSoil = "सामान्य मिट्टी"
+    simulationWetSoil = "गीली मिट्टी"
+    simulationHighTemp = "उच्च तापमान"
+    simulationLowTemp = "कम तापमान"
+    simulationHighHumidity = "उच्च नमी"
+    simulationLowHumidity = "कम नमी"
+    simulationIrrigate = "सिंचाई का अनुकरण करें"
+    simulationDisconnect = "सेंसर अनुपलब्ध का अनुकरण करें"
+    simulationReconnect = "सेंसर पुनः कनेक्ट करें"
+    settingsOpenSimulation = "सेंसर सिमुलेशन (परीक्षण)"
+
+    settingsSectionProfile = "प्रोफाइल"
+    settingsSectionLanguageVoice = "भाषा और आवाज़"
+    settingsSectionAdvanced = "उन्नत"
+    settingsFarmerProfile = "किसान प्रोफाइल"
+    settingsFarmInformation = "खेत की जानकारी"
+    settingsVoiceAssistant = "आवाज़ सहायक"
+    settingsVoiceAssistantDescription = "कृषिनिर्णय को जवाब बोलकर सुनाने और सवाल सुनने की अनुमति दें।"
+    profileCompletionTemplate = "प्रोफाइल %d%% पूर्ण"
+    profileCompletionMissingLabel = "शेष:"
+    profileCompletionComplete = "आपकी प्रोफाइल पूर्ण है"
+
+    onboardingStepOfTemplate = "चरण %1\$d / %2\$d"
+    onboardingContinue = "आगे बढ़ें"
+    onboardingBack = "पीछे"
+    onboardingWelcomeTitle = "कृषिनिर्णय में आपका स्वागत है"
+    onboardingWelcomeSubtitle = "आपका स्मार्ट खेती साथी। चलिए आपका खेत सेट करते हैं — इसमें बस कुछ मिनट लगेंगे।"
+    onboardingPersonalStepTitle = "आपके बारे में"
+    onboardingFullName = "पूरा नाम"
+    onboardingMobileNumber = "मोबाइल नंबर"
+    onboardingAlternateMobile = "वैकल्पिक मोबाइल नंबर"
+    onboardingGender = "लिंग"
+    onboardingAddress = "पता"
+    onboardingFarmStepTitle = "आपका खेत"
+    onboardingOwnershipType = "भूमि स्वामित्व"
+    onboardingIrrigationAvailable = "सिंचाई उपलब्ध है"
+    onboardingWaterSource = "पानी का स्रोत"
+    onboardingCropStepTitle = "आपकी फसल"
+    onboardingPrimaryCrop = "मुख्य फसल"
+    onboardingSecondaryCrop = "दूसरी फसल"
+    onboardingCropStage = "फसल की अवस्था"
+    onboardingPreferencesStepTitle = "आपकी प्राथमिकताएं"
+    onboardingFarmingExperience = "खेती का अनुभव (वर्षों में)"
+    onboardingVoiceAssistance = "आवाज़ सहायता चालू करें"
+    onboardingConfirmationStepTitle = "अपनी जानकारी की पुष्टि करें"
+    onboardingConfirmationFarmer = "किसान"
+    onboardingConfirmationFarm = "खेत"
+    onboardingConfirmationLocation = "स्थान"
+    onboardingConfirmationCrop = "फसल"
+    onboardingConfirmationIrrigation = "सिंचाई"
+    onboardingConfirmationLanguage = "भाषा"
+    onboardingSaveProfile = "किसान प्रोफ़ाइल सहेजें"
+    onboardingRequiredFieldsMissing = "कृपया * चिह्नित आवश्यक फ़ील्ड भरें"
+    onboardingOptionalLabel = "वैकल्पिक"
+
+    farmSetupTitle = "खेत सेटअप"
+    farmSetupLocationSection = "स्थान"
+    farmSetupState = "राज्य"
+    farmSetupDistrict = "जिला"
+    farmSetupTaluka = "तालुका"
+    farmSetupVillage = "गांव"
+    farmSetupCoordinatesSection = "सटीक स्थान (वैकल्पिक)"
+    farmSetupCoordinatesHint = "निर्देशांक जोड़ने से अधिक सटीक मौसम मिलता है। Google Maps पर अपना गांव खोजें और पिन को दबाकर रखें।"
+    farmSetupLatitude = "अक्षांश (Latitude)"
+    farmSetupLongitude = "देशांतर (Longitude)"
+    farmSetupAcres = "खेत का आकार (एकड़)"
+    farmSetupSoilType = "मिट्टी का प्रकार"
+    farmSetupCrop = "फसल"
+    farmSetupCropVariety = "फसल की किस्म"
+    farmSetupIrrigationMethod = "सिंचाई / खेती पद्धति"
+    farmSetupIrrigationRainFed = "वर्षा आधारित"
+    farmSetupIrrigationIrrigated = "सिंचित"
+    farmSetupIrrigationDrip = "ड्रिप"
+    farmSetupIrrigationSprinkler = "स्प्रिंकलर"
+    farmSetupIrrigationOther = "अन्य"
+    farmSetupSave = "सहेजें"
+    farmSetupSaved = "खेत का विवरण सहेजा गया"
+
+    dataSourceLive = "लाइव"
+    dataSourceCached = "कैश्ड — अंतिम ज्ञात डेटा दिखाया जा रहा है"
+    dataSourceMock = "डेमो डेटा"
+    dataSourceUnavailable = "अभी उपलब्ध नहीं"
+    dataSourceLoading = "लोड हो रहा है..."
+    dataSourceNoData = "आज डेटा नहीं"
+    weatherLoading = "लाइव मौसम लोड हो रहा है..."
+    weatherFetchFailed = "लाइव मौसम लोड नहीं हो सका। कनेक्शन जांचें और फिर कोशिश करें।"
+    weatherNoLocation = "लाइव मौसम देखने के लिए फार्म सेटअप में अपने खेत का स्थान जोड़ें।"
+    marketLoading = "लाइव मंडी भाव लोड हो रहे हैं..."
+    marketNoDataToday = "आज आपकी फसल और राज्य के लिए मंडी भाव उपलब्ध नहीं है।"
+    marketFetchFailed = "लाइव मंडी भाव लोड नहीं हो सके। कनेक्शन जांचें और फिर कोशिश करें।"
+    actionRetry = "फिर कोशिश करें"
+    marketChangeCropOrLocation = "फसल या स्थान बदलें"
+    marketSameDistrict = "आपका जिला"
+    marketSameState = "आपके राज्य की निकटतम मंडी"
+    marketViewMoreMarkets = "अधिक मंडियाँ देखें"
+    marketTitle = "बाजार भाव"
+    marketUnavailable = "बाजार भाव अभी जुड़े नहीं हैं — कोई लाइव डेटा स्रोत कॉन्फ़िगर नहीं है।"
+    marketLatestAvailable = "उपलब्ध ताज़ा मंडी भाव"
+    marketModalLabel = "मोडल"
+    marketMinLabel = "न्यूनतम"
+    marketMaxLabel = "अधिकतम"
+    marketDateLabel = "दिनांक"
+    marketOtherMandis = "अन्य मंडियाँ"
+    marketTrendRising = "बढ़ रहा है"
+    marketTrendFalling = "घट रहा है"
+    marketTrendStable = "स्थिर"
+    marketNoDataTodayTemplate = "आज %s के लिए %s में कोई बाज़ार डेटा उपलब्ध नहीं है।"
+    marketBestAvailable = "सबसे अच्छी उपलब्ध मंडी"
+    marketPerQuintal = "/ क्विंटल"
+    marketAvgLabel = "औसत"
+    marketLastUpdatedTemplate = "%s अपडेट किया गया"
+}
+
+val MarathiStrings = AppStrings().apply {
+    online = "ऑनलाइन"
+    offline = "ऑफलाइन"
+    settings = "सेटिंग्ज"
+    back = "मागे"
+    logOut = "लॉग आउट"
+
+    riskLow = "कमी"
+    riskMedium = "मध्यम"
+    riskHigh = "जास्त"
+    riskNotAssessed = "मूल्यांकन नाही"
+
+    timeJustNow = "आत्ताच"
+    timeSecondsAgoTemplate = "%d सेकंदांपूर्वी"
+    timeMinutesAgoTemplate = "%d मिनिटांपूर्वी"
+    timeHoursAgoTemplate = "%d तासांपूर्वी"
+    timeDaysAgoTemplate = "%d दिवसांपूर्वी"
+    timeNever = "कधीच नाही"
+
+    recommendationIrrigateSevere = "लगेच सिंचन करा — जमिनीतील ओलावा खूप कमी आहे आणि तापमान जास्त आहे."
+    recommendationIrrigateWaterHigh = "लगेच सिंचन करा — जमिनीतील ओलावा खूप कमी आहे."
+    recommendationShadeOrIrrigateHeat = "जास्त तापमानाची भरपाई करण्यासाठी सावली द्या किंवा सिंचन करा."
+    recommendationReviewCropHealthHigh = "पिकाच्या आरोग्याचा धोका जास्त आहे — नवीनतम स्कॅन तपासा आणि उपचारांचा विचार करा."
+    recommendationPlanIrrigationSoon = "पुढील दिवसात सिंचनाचे नियोजन करा — जमिनीतील ओलावा कमी होत आहे."
+    recommendationMonitorTemperature = "तापमानावर लक्ष ठेवा — परिस्थिती नेहमीपेक्षा जास्त उष्ण आहे."
+    recommendationReviewCropHealthModerate = "पिकाच्या आरोग्यावर लक्ष ठेवा — नवीनतम स्कॅनमध्ये मध्यम चिंता दिसली आहे."
+    recommendationHealthyRange = "जमिनीतील ओलावा आणि तापमान निरोगी मर्यादेत आहेत. आज कोणतीही कृती आवश्यक नाही."
+    recommendationNotEnoughData = "शिफारस करण्यासाठी सध्या पुरेसा डेटा नाही."
+
+    reasonSoilMoistureHighTemplate = "जमिनीतील ओलावा %.1f%% वर खूप कमी आहे"
+    reasonSoilMoistureMediumTemplate = "जमिनीतील ओलावा %.1f%% वर कमी होत आहे"
+    reasonSoilMoistureHealthyTemplate = "जमिनीतील ओलावा %.1f%% निरोगी मर्यादेत आहे"
+    reasonModelPredictionTemplate = "ऑन-डिव्हाइस मॉडेल %s जल-ताण धोक्याचा अंदाज %d%% विश्वासार्हतेने लावते"
+    reasonTemperatureHighTemplate = "तापमान %.1f°C उच्च-धोका मर्यादेवर किंवा त्यापेक्षा जास्त आहे"
+    reasonTemperatureMediumTemplate = "तापमान %.1f°C नेहमीपेक्षा जास्त उष्ण आहे"
+    reasonTemperatureHealthyTemplate = "तापमान %.1f°C स्थिर आणि मर्यादेत आहे"
+    reasonCropHealthNotAssessed = "पिकाच्या आरोग्याचे अद्याप मूल्यांकन झालेले नाही — रोग तपासणीत पानाचे स्कॅन करा"
+    reasonCropHealthAssessedTemplate = "नवीनतम पीक स्कॅन (%s) मध्ये %s धोका दिसला"
+    reasonDeviceOffline = "डिव्हाइस ऑफलाइन आहे — शेवटची सिंक केलेली रीडिंग दाखवत आहे"
+
+    navHome = "होम"
+    navAdvisory = "सल्ला"
+    navWeather = "हवामान"
+    navAlerts = "सूचना"
+    navAssistant = "एआय सहाय्यक"
+    navProfile = "प्रोफाइल"
+
+    dashboardGreeting = "नमस्कार, शेतकरी!"
+    dashboardGreetingMorning = "शुभ सकाळ, %s"
+    dashboardGreetingAfternoon = "नमस्कार, %s"
+    dashboardGreetingEvening = "शुभ संध्याकाळ, %s"
+    dashboardLiveToday = "आजचा थेट डेटा अद्ययावत झाला आहे"
+    dashboardShowingLastAvailable = "शेवटची उपलब्ध माहिती दाखवत आहे"
+    dashboardOverallRisk = "एकूण शेत धोका"
+    dashboardGatheringReading = "पहिली रीडिंग गोळा करत आहे…"
+    dashboardViewFullAnalysis = "संपूर्ण AI विश्लेषण पहा →"
+    dashboardWhyLabel = "का"
+    dashboardFertilizerLabel = "खत"
+    feedbackDidYouFollow = "तुम्ही ही शिफारस पाळली का?"
+    feedbackYes = "होय"
+    feedbackNo = "नाही"
+    feedbackPartially = "अंशतः"
+    feedbackWhatHappened = "काय झालं?"
+    feedbackThanks = "तुमच्या अभिप्रायाबद्दल धन्यवाद!"
+    feedbackResultImproved = "पीक सुधारले"
+    feedbackResultNoChange = "काही फरक नाही"
+    feedbackResultWorse = "पीक बिघडले"
+    feedbackResultOther = "इतर"
+    dashboardWaterStress = "जल ताण"
+    dashboardHeat = "उष्णता"
+    dashboardCropHealth = "पीक आरोग्य"
+    dashboardDeviceOnline = "डिव्हाइस ऑनलाइन"
+    dashboardDeviceOffline = "डिव्हाइस ऑफलाइन"
+    dashboardSyncedTemplate = "%s सिंक झाले"
+    dashboardQuickAccess = "जलद प्रवेश"
+    dashboardQaAdvisory = "पीक सल्ला"
+    dashboardQaMonitoring = "शेत सेन्सर"
+    dashboardQaSchemes = "सरकारी योजना"
+    dashboardQaMarket = "बाजारभाव"
+    dashboardQaDisease = "रोग तपासणी"
+    dashboardQaAssistant = "एआय सहाय्यक"
+    dashboardQaFarmSetup = "फार्म सेटअप"
+
+    monitoringTitle = "लाइव्ह मॉनिटरिंग"
+    soilMoisture = "जमिनीतील ओलावा"
+    temperature = "तापमान"
+    humidity = "आर्द्रता"
+    phLabel = "pH · फेज 2 सेन्सर"
+    lastUpdatedTemplate = "%s रोजी अपडेट केले"
+
+    diseaseDetectionTitle = "रोग ओळख"
+    scanLeaf = "पान स्कॅन करा"
+    choosePhoto = "गॅलरीतून फोटो निवडा"
+    analyzingPhoto = "तुमच्या फोटोचे विश्लेषण करत आहे…"
+    confidenceTemplate = "%d%% विश्वासार्हता"
+
+    alertsTitle = "सूचना"
+    alertsEmpty = "अजून कोणत्याही सूचना नाहीत — इथे धोक्यातील बदल आणि पीक स्कॅन निकाल दिसतील."
+
+    voiceAssistantTitle = "कृषिनिर्णय एआय"
+    chatbotSubtitle = "तुमचा शेती सहाय्यक"
+    chatbotWelcome = "नमस्कार शेतकरी, मी आज तुम्हाला कशी मदत करू?"
+    chatbotPlaceholder = "तुमच्या शेताबद्दल विचारा…"
+    chatbotFallback = "क्षमस्व, सध्या सर्व्हरशी संपर्क होऊ शकला नाही. कृपया थोड्या वेळाने पुन्हा प्रयत्न करा."
+    chatbotListen = "ऐका"
+    chatbotSpeak = "बोला"
+    chatbotMicPermissionDenied = "आवाज इनपुटसाठी मायक्रोफोन परवानगी आवश्यक आहे."
+    chatbotSend = "पाठवा"
+    chatbotStop = "थांबवा"
+    chatbotRetry = "पुन्हा प्रयत्न करा"
+    chatbotCopy = "कॉपी करा"
+    chatbotCopied = "कॉपी झाले"
+    chatbotClearChat = "चॅट साफ करा"
+    chatbotThinking = "कृषिनिर्णय एआय विचार करत आहे..."
+    localAiStopped = "थांबवले."
+    contentDescOpenChatbot = "चॅटबॉट उघडा"
+    chatbotChipWeather = "हवामान?"
+    chatbotChipSoilMoisture = "जमिनीतील ओलावा?"
+    chatbotChipWhatToDo = "मी काय करावे?"
+    chatbotChipSchemes = "योजना?"
+    chatbotWeatherReplyTemplate = "पुढील %s तासांत पावसाची शक्यता %d%% आहे. वाऱ्याचा वेग %d किमी/तास आहे."
+    chatbotSoilMoistureReplyTemplate = "तुमच्या जमिनीतील ओलावा %.1f%% आहे — %s."
+    chatbotSoilStatusDeficient = "कमी"
+    chatbotSoilStatusTrendingLow = "कमी होत आहे"
+    chatbotSoilStatusHealthy = "निरोगी"
+    chatbotSoilStatusUnknown = "मूल्यांकन नाही"
+    chatbotAdviceIrrigateNowTemplate = "आज सुमारे %d मिनिटे सिंचन करा."
+    chatbotAdviceIrrigateSoonTemplate = "पुढील दिवसात सुमारे %d मिनिटे सिंचनाचे नियोजन करा."
+    chatbotAdviceNoIrrigationNeeded = "आज सिंचनाची गरज नाही — परिस्थिती निरोगी आहे."
+    chatbotAdviceNotEnoughData = "अजून पुरेसा डेटा नाही — पहिल्या रीडिंगनंतर पुन्हा तपासा."
+    chatbotSchemesReplyTemplate = "तुमच्या शेतासाठी या योजना उपयुक्त ठरू शकतात: %s"
+    chatbotFallbackHelp = "मी जमिनीतील ओलावा, हवामान, सिंचन सल्ला आणि सरकारी योजनांमध्ये मदत करू शकतो — खालील सूचनेवर टॅप करा किंवा त्यांपैकी एकाबद्दल विचारा!"
+
+    settingsDataSource = "डेटा स्रोत"
+    settingsDataSourceDescription = "मॉक मोड डीफॉल्ट आहे — पूर्णपणे ऑफलाइन, बदलणारा डेमो डेटा. खरे ESP32 डिव्हाइस आणि Firebase प्रकल्प जोडल्यावर लाइव्ह मोडवर स्विच करा."
+    settingsLanguage = "भाषा"
+    settingsModeMock = "मॉक"
+    settingsModeLive = "लाइव्ह"
+    settingsLanguageEnglish = "English"
+    settingsLanguageHindi = "हिंदी"
+
+    loginTagline = "प्रत्येक शेतकऱ्यासाठी स्मार्ट शेत निरीक्षण"
+    loginEmail = "ईमेल"
+    loginPassword = "पासवर्ड"
+    loginSubmit = "लॉग इन"
+    loginDemoHint = "डेमो वापरत आहात? demo@krishinirnay.app वापरून पहा"
+    loginCreateAccount = "खाते तयार करा"
+    loginForgotPassword = "पासवर्ड विसरलात?"
+    loginResetEmailSent = "पासवर्ड रीसेट ईमेल पाठवला आहे — कृपया तुमचा इनबॉक्स तपासा."
+    registerTitle = "तुमचे खाते तयार करा"
+    registerSubtitle = "स्मार्ट शेत निरीक्षणासाठी कृषिनिर्णयमध्ये सामील व्हा"
+    registerFirstName = "पहिले नाव"
+    registerLastName = "आडनाव"
+    registerConfirmPassword = "पासवर्डची पुष्टी करा"
+    registerMobile = "मोबाइल नंबर"
+    registerSubmit = "खाते तयार करा"
+    registerAlreadyHaveAccount = "आधीच खाते आहे? लॉग इन करा"
+    registerErrorNameRequired = "कृपया तुमचे नाव प्रविष्ट करा"
+    registerErrorInvalidEmail = "कृपया वैध ईमेल प्रविष्ट करा"
+    registerErrorPasswordTooShort = "पासवर्ड किमान 6 अक्षरांचा असावा"
+    registerErrorPasswordMismatch = "पासवर्ड जुळत नाहीत"
+    registerErrorInvalidMobile = "कृपया वैध 10-अंकी मोबाइल नंबर प्रविष्ट करा"
+
+    advisoryTitle = "पीक सल्ला"
+    advisoryAiAdvice = "AI सल्ला"
+    advisoryRecommendedTasks = "सध्याच्या शिफारसी"
+    advisoryTaskIrrigate = "सिंचन करा"
+    advisoryTaskPestControl = "कीड नियंत्रण"
+    advisoryTaskFertilizer = "खताचे प्रमाण"
+    advisoryTaskSpraySchedule = "फवारणी वेळापत्रक"
+    advisoryIrrigateHighTemplate = "जमिनीतील ओलावा %d%% आहे. 12–24 तासांत सिंचन करा."
+    advisoryIrrigateLowTemplate = "जमिनीतील ओलावा %d%% वर निरोगी आहे. आज सिंचनाची गरज नाही."
+    advisoryPestWithDiseaseTemplate = "%s ची लक्षणे आढळली — शिफारस केलेले उपचार लागू करा."
+    advisoryPestElevated = "पिकाच्या आरोग्याचा धोका जास्त आहे — कीड किंवा रोगासाठी पाने तपासा."
+    advisoryPestNone = "कोणताही कीड किंवा रोग धोका आढळला नाही — साप्ताहिक निरीक्षण सुरू ठेवा."
+
+    weatherTitle = "हवामान अंदाज"
+    weatherToday = "आज"
+    weatherThreeDay = "3 दिवस"
+    weatherSevenDay = "7 दिवस"
+    weatherRainChance = "पावसाची शक्यता"
+    weatherWind = "वारा"
+    weatherFeelsLike = "जाणवते"
+    weatherUvIndex = "यूव्ही निर्देशांक"
+    weatherConditionSunny = "ऊन"
+    weatherConditionPartlyCloudy = "अंशतः ढगाळ"
+    weatherConditionCloudy = "ढगाळ"
+    weatherConditionRain = "पाऊस"
+    weatherConditionStorm = "वादळ"
+    weatherRainInTemplate = "पुढील %s तासांत पाऊस अपेक्षित"
+    weatherUnavailableMessage = "हवामान माहिती सध्या उपलब्ध नाही. ती इथे पाहण्यासाठी फार्म सेटअपमध्ये तुमच्या शेताचे ठिकाण जोडा."
+    weatherVisibility = "दृश्यमानता"
+    weatherPressure = "हवेचा दाब"
+    weatherFarmingTips = "शेतीसाठी सूचना"
+    weatherTipRainLikely = "आज पाऊस पडण्याची शक्यता आहे"
+    weatherTipGoodForIrrigation = "पावसाची शक्यता कमी आहे — सिंचनासाठी चांगली वेळ"
+    weatherTipHighHumidityDisease = "जास्त आर्द्रतेमुळे रोगाचा धोका वाढू शकतो — तुमचे पीक तपासा"
+    weatherTipHighWindSpraying = "जोरदार वारा — आज कीटकनाशक फवारणी करू नका"
+
+    schemesTitle = "सरकारी योजना"
+    schemesSubtitle = "तुमच्यासाठी योग्य योजना"
+    schemesViewDetails = "तपशील पहा"
+    schemesHideDetails = "तपशील लपवा"
+    schemesEligibilityLabel = "पात्रता"
+    schemesUnavailable = "सध्या कोणतीही जुळणारी सरकारी योजना नाही — हे तुमच्या प्रोफाइलमधील शेताचे ठिकाण, पीक आणि जमिनीच्या आकारावर अवलंबून आहे."
+    schemesLastVerified = "अंतिम पडताळणी"
+    schemesWhyEligible = "तुम्ही पात्र का आहात:"
+
+    profileTitle = "प्रोफाइल"
+    profileMyCrops = "माझी पिके"
+    profileMyFarm = "माझे शेत"
+    profileMyEquipment = "माझी उपकरणे (IoT)"
+    profileMyDocuments = "माझी कागदपत्रे"
+    profileFarmSizeTemplate = "%s एकर"
+    profileNoDocuments = "अजून कोणतीही कागदपत्रे अपलोड केलेली नाहीत."
+
+    recommendationTreatPestDetected = "एक कीड आढळली आहे — पिकाची तपासणी करा आणि लवकरात लवकर उपचार करा."
+    recommendationMonitorPestRisk = "कमी तीव्रतेची कीड आढळली आहे — बारकाईने लक्ष ठेवा."
+    reasonPestNotAssessed = "कीड धोक्याचे अद्याप मूल्यांकन झालेले नाही — कीड ओळखीत पानाचे स्कॅन करा"
+    reasonPestAssessedTemplate = "नवीनतम कीड स्कॅन (%s) मध्ये %s धोका दिसला"
+    reasonRainExpectedSoon = "लवकरच पाऊस अपेक्षित आहे"
+
+    timingImmediate = "आत्ताच"
+    timingThisEvening = "आज संध्याकाळी"
+    timingWithin24Hours = "24 तासांच्या आत"
+    timingWithin3Days = "3 दिवसांच्या आत"
+    timingNoActionNeeded = "आज कोणतीही कृती आवश्यक नाही"
+    benefitPreventCropLoss = "आत्ता कृती केल्याने पिकाचे नुकसान टाळण्यास मदत होऊ शकते."
+    benefitImprovedYield = "यावर कृती केल्याने तुमचे उत्पन्न सुधारण्यास मदत होऊ शकते."
+    benefitHealthyGrowthContinues = "तुमचे पीक निरोगीपणे वाढत राहील."
+    benefitUnknown = "फायदा अद्याप माहीत नाही — पुढील रीडिंगनंतर तपासा."
+
+    fertilizerNutrientNitrogenName = "नायट्रोजन"
+    fertilizerNutrientPhosphorusName = "स्फुरद"
+    fertilizerNutrientPotassiumName = "पालाश"
+    fertilizerTypeUreaName = "युरिया"
+    fertilizerTypeDapName = "डीएपी"
+    fertilizerTypeMopName = "एमओपी"
+    fertilizerRecommendedTemplate = "तुमच्या जमिनीत %s ची कमतरता आहे. %s टाकण्याचा विचार करा, अंदाजे %s — %s."
+    fertilizerSafetyNote = "हा एक सर्वसाधारण अंदाज आहे, अचूक मात्रा नाही. टाकण्यापूर्वी तुमच्या स्थानिक कृषी विज्ञान केंद्राकडून किंवा खऱ्या माती-चाचणी कार्डावरून मात्रा निश्चित करा."
+    fertilizerNoActionNeeded = "जमिनीतील पोषक तत्वे सध्या पुरेशी दिसत आहेत — खताची गरज नाही."
+    fertilizerInsufficientData = "खताची शिफारस करण्यापूर्वी अधिक माती माहिती (नायट्रोजन, स्फुरद, पालाश) आवश्यक आहे."
+
+    settingsAiMode = "एआय मोड"
+    settingsAiModeLocal = "लोकल मॉडेल"
+    settingsAiModeOffline = "ऑफलाइन एआय"
+    settingsAiModeUnavailable = "लोकल मॉडेल उपलब्ध नाही"
+    settingsAiModeLoading = "एआय स्थिती तपासत आहे..."
+    settingsAiModeModelMissing = "लोकल एआय मॉडेल इन्स्टॉल केलेले नाही"
+    settingsAiModeGenerating = "लोकल एआय विचार करत आहे..."
+    aiStatusOnDeviceReady = "ऑन-डिव्हाइस एआय तयार आहे"
+    aiStatusServerReady = "लोकल सर्व्हर एआय तयार आहे"
+    aiStatusOffline = "एआय ऑफलाइन आहे"
+    localAiGenerationFailed = "लोकल एआय या प्रश्नाचे उत्तर देऊ शकले नाही"
+    localAiBothUnavailable = "लोकल एआय उपलब्ध नाही. ऑन-डिव्हाइस एआय मॉडेल डाउनलोड करा किंवा एआय सर्व्हरशी कनेक्ट् करा."
+    localAiDataUnavailable = "या माहितीचा डेटा अद्याप उपलब्ध नाही."
+    aiDiagnosticsTitle = "एआय डायग्नोस्टिक्स"
+    aiDiagnosticsRunHint = "एआय कनेक्शन तपासा"
+    aiDiagnosticsProvider = "एआय प्रदाता"
+    aiDiagnosticsServer = "सर्व्हर"
+    localAiDiagnosticsRun = "एआय कनेक्शन तपासा"
+    localAiDiagnosticsRunning = "कनेक्शन तपासत आहे..."
+    localAiDiagnosticsServerReachable = "सर्व्हरशी संपर्क आहे"
+    localAiDiagnosticsOllamaAvailable = "Ollama उपलब्ध आहे"
+    localAiDiagnosticsEnglishModel = "इंग्रजी मॉडेल"
+    localAiDiagnosticsHindiModel = "हिंदी मॉडेल"
+    localAiDiagnosticsMarathiModel = "मराठी मॉडेल"
+    localAiDiagnosticsChatEndpointAvailable = "चॅट एंडपॉइंट उपलब्ध आहे"
+    localAiDiagnosticsYes = "होय"
+    localAiDiagnosticsNo = "नाही"
+    settingsCloudFallback = "बॅकअप म्हणून क्लाउड एआयला परवानगी द्या"
+    settingsCloudFallbackDescription = "डीफॉल्टनुसार बंद. चालू केल्यास, लोकल एआय उत्तर देऊ शकत नसेल तर हे अ‍ॅप तुमच्या शेताचा सारांश ऑनलाइन एआय सेवेला पाठवू शकते."
+    simulationTitle = "सेन्सर सिम्युलेशन"
+    simulationDescription = "प्रत्यक्ष सेन्सरशिवाय अ‍ॅपची चाचणी करा — डिसिजन इंजिन कसे प्रतिक्रिया देते ते पहा."
+    simulationLiveModeWarning = "सिम्युलेशन वापरण्यासाठी सेटिंग्जमध्ये मॉक मोड निवडा — खऱ्या सेन्सर डेटावर हे नियंत्रण काहीही करत नाहीत."
+    simulationDrySoil = "कोरडी माती"
+    simulationNormalSoil = "सामान्य माती"
+    simulationWetSoil = "ओली माती"
+    simulationHighTemp = "जास्त तापमान"
+    simulationLowTemp = "कमी तापमान"
+    simulationHighHumidity = "जास्त आर्द्रता"
+    simulationLowHumidity = "कमी आर्द्रता"
+    simulationIrrigate = "सिंचनाचे अनुकरण करा"
+    simulationDisconnect = "सेन्सर अनुपलब्धचे अनुकरण करा"
+    simulationReconnect = "सेन्सर पुन्हा जोडा"
+    settingsOpenSimulation = "सेन्सर सिम्युलेशन (चाचणी)"
+
+    settingsSectionProfile = "प्रोफाइल"
+    settingsSectionLanguageVoice = "भाषा आणि आवाज"
+    settingsSectionAdvanced = "प्रगत"
+    settingsFarmerProfile = "शेतकरी प्रोफाइल"
+    settingsFarmInformation = "शेताची माहिती"
+    settingsVoiceAssistant = "आवाज सहाय्यक"
+    settingsVoiceAssistantDescription = "कृषिनिर्णयला उत्तरे मोठ्याने वाचण्याची आणि प्रश्न ऐकण्याची परवानगी द्या."
+    profileCompletionTemplate = "प्रोफाइल %d%% पूर्ण"
+    profileCompletionMissingLabel = "शिल्लक:"
+    profileCompletionComplete = "तुमची प्रोफाइल पूर्ण आहे"
+
+    onboardingStepOfTemplate = "पायरी %1\$d / %2\$d"
+    onboardingContinue = "पुढे जा"
+    onboardingBack = "मागे"
+    onboardingWelcomeTitle = "क्रिशीनिर्णयमध्ये आपले स्वागत आहे"
+    onboardingWelcomeSubtitle = "तुमचा स्मार्ट शेती साथीदार. चला तुमचे शेत सेट करूया — यासाठी फक्त काही मिनिटे लागतील."
+    onboardingPersonalStepTitle = "तुमच्याबद्दल"
+    onboardingFullName = "पूर्ण नाव"
+    onboardingMobileNumber = "मोबाईल नंबर"
+    onboardingAlternateMobile = "पर्यायी मोबाईल नंबर"
+    onboardingGender = "लिंग"
+    onboardingAddress = "पत्ता"
+    onboardingFarmStepTitle = "तुमचे शेत"
+    onboardingOwnershipType = "जमीन मालकी"
+    onboardingIrrigationAvailable = "सिंचन उपलब्ध आहे"
+    onboardingWaterSource = "पाण्याचा स्रोत"
+    onboardingCropStepTitle = "तुमचे पीक"
+    onboardingPrimaryCrop = "मुख्य पीक"
+    onboardingSecondaryCrop = "दुसरे पीक"
+    onboardingCropStage = "पिकाची अवस्था"
+    onboardingPreferencesStepTitle = "तुमची प्राधान्ये"
+    onboardingFarmingExperience = "शेतीचा अनुभव (वर्षे)"
+    onboardingVoiceAssistance = "आवाज सहाय्य सुरू करा"
+    onboardingConfirmationStepTitle = "तुमची माहिती तपासा"
+    onboardingConfirmationFarmer = "शेतकरी"
+    onboardingConfirmationFarm = "शेत"
+    onboardingConfirmationLocation = "ठिकाण"
+    onboardingConfirmationCrop = "पीक"
+    onboardingConfirmationIrrigation = "सिंचन"
+    onboardingConfirmationLanguage = "भाषा"
+    onboardingSaveProfile = "शेतकरी प्रोफाइल जतन करा"
+    onboardingRequiredFieldsMissing = "कृपया * चिन्हांकित आवश्यक रकाने भरा"
+    onboardingOptionalLabel = "ऐच्छिक"
+
+    settingsLanguageMarathi = "मराठी"
+
+    farmSetupTitle = "शेत सेटअप"
+    farmSetupLocationSection = "स्थान"
+    farmSetupState = "राज्य"
+    farmSetupDistrict = "जिल्हा"
+    farmSetupTaluka = "तालुका"
+    farmSetupVillage = "गाव"
+    farmSetupCoordinatesSection = "अचूक स्थान (ऐच्छिक)"
+    farmSetupCoordinatesHint = "निर्देशांक जोडल्यास अधिक अचूक हवामान मिळते. Google Maps वर तुमचे गाव शोधा आणि पिन दाबून ठेवा."
+    farmSetupLatitude = "अक्षांश (Latitude)"
+    farmSetupLongitude = "रेखांश (Longitude)"
+    farmSetupAcres = "शेताचा आकार (एकर)"
+    farmSetupSoilType = "मातीचा प्रकार"
+    farmSetupCrop = "पीक"
+    farmSetupCropVariety = "पिकाची जात"
+    farmSetupIrrigationMethod = "सिंचन / शेती पद्धत"
+    farmSetupIrrigationRainFed = "पावसावर आधारित"
+    farmSetupIrrigationIrrigated = "सिंचित"
+    farmSetupIrrigationDrip = "ठिबक"
+    farmSetupIrrigationSprinkler = "तुषार"
+    farmSetupIrrigationOther = "इतर"
+    farmSetupSave = "जतन करा"
+    farmSetupSaved = "शेताचा तपशील जतन केला"
+
+    dataSourceLive = "लाइव्ह"
+    dataSourceCached = "कॅश्ड — शेवटचा ज्ञात डेटा दाखवत आहे"
+    dataSourceMock = "डेमो डेटा"
+    dataSourceUnavailable = "सध्या उपलब्ध नाही"
+    dataSourceLoading = "लोड होत आहे..."
+    dataSourceNoData = "आज डेटा नाही"
+    weatherLoading = "थेट हवामान लोड होत आहे..."
+    weatherFetchFailed = "थेट हवामान लोड होऊ शकले नाही. कनेक्शन तपासा आणि पुन्हा प्रयत्न करा."
+    weatherNoLocation = "थेट हवामान पाहण्यासाठी फार्म सेटअपमध्ये तुमच्या शेताचे ठिकाण जोडा."
+    marketLoading = "थेट बाजारभाव लोड होत आहेत..."
+    marketNoDataToday = "आज तुमच्या पिकासाठी आणि राज्यासाठी बाजारभाव उपलब्ध नाही."
+    marketFetchFailed = "थेट बाजारभाव लोड होऊ शकले नाहीत. कनेक्शन तपासा आणि पुन्हा प्रयत्न करा."
+    actionRetry = "पुन्हा प्रयत्न करा"
+    marketChangeCropOrLocation = "पीक किंवा ठिकाण बदला"
+    marketSameDistrict = "तुमचा जिल्हा"
+    marketSameState = "तुमच्या राज्यातील जवळची मंडई"
+    marketViewMoreMarkets = "अधिक बाजार पहा"
+    marketTitle = "बाजारभाव"
+    marketUnavailable = "बाजारभाव अद्याप जोडलेले नाहीत — कोणताही लाइव्ह डेटा स्रोत कॉन्फिगर केलेला नाही."
+    marketLatestAvailable = "उपलब्ध ताजा बाजारभाव"
+    marketModalLabel = "मोडल"
+    marketMinLabel = "किमान"
+    marketMaxLabel = "कमाल"
+    marketDateLabel = "दिनांक"
+    marketOtherMandis = "इतर बाजार"
+    marketTrendRising = "वाढत आहे"
+    marketTrendFalling = "घसरत आहे"
+    marketTrendStable = "स्थिर"
+    marketNoDataTodayTemplate = "आज %s साठी %s मध्ये कोणताही बाजार डेटा उपलब्ध नाही."
+    marketBestAvailable = "सर्वोत्तम उपलब्ध बाजार"
+    marketPerQuintal = "/ क्विंटल"
+    marketAvgLabel = "सरासरी"
+    marketLastUpdatedTemplate = "%s रोजी अद्ययावत"
+}
 
 val LocalAppStrings = staticCompositionLocalOf { EnglishStrings }
 
-fun appStringsFor(languageTag: String): AppStrings = if (languageTag == "hi") HindiStrings else EnglishStrings
+fun appStringsFor(languageTag: String): AppStrings = when (languageTag) {
+    "hi" -> HindiStrings
+    "mr" -> MarathiStrings
+    else -> EnglishStrings
+}

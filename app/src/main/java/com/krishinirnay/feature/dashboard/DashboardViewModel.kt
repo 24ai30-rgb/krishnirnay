@@ -2,11 +2,19 @@ package com.krishinirnay.feature.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.krishinirnay.core.data.model.DataSourceStatus
+import com.krishinirnay.core.data.model.FarmerProfile
 import com.krishinirnay.core.data.model.FieldState
+import com.krishinirnay.core.data.model.MarketState
 import com.krishinirnay.core.data.model.RiskLevel
+import com.krishinirnay.core.data.model.SyncStatus
+import com.krishinirnay.core.data.model.WeatherState
+import com.krishinirnay.core.data.model.toDataSourceStatus
 import com.krishinirnay.core.data.repository.FieldStateRepository
+import com.krishinirnay.core.data.repository.MarketRepository
 import com.krishinirnay.core.data.repository.ProfileRepository
 import com.krishinirnay.core.data.repository.RiskRepository
+import com.krishinirnay.core.data.repository.WeatherRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,21 +29,36 @@ class DashboardViewModel @Inject constructor(
     private val fieldStateRepository: FieldStateRepository,
     private val profileRepository: ProfileRepository,
     private val riskRepository: RiskRepository,
+    private val weatherRepository: WeatherRepository,
+    private val marketRepository: MarketRepository,
 ) : ViewModel() {
 
     private val apiRisk = MutableStateFlow<Int?>(null)
     private val apiConfidence = MutableStateFlow(0f)
 
+    /** Farm/weather/market context, combined separately since Kotlin's typed `combine` tops out at 5 flows. */
+    private val farmContext = combine(
+        profileRepository.profile,
+        weatherRepository.weather,
+        marketRepository.market,
+    ) { profile, weather, market -> Triple(profile, weather, market) }
+
     val uiState: StateFlow<DashboardUiState> =
         combine(
             fieldStateRepository.fieldState,
+            fieldStateRepository.syncStatus,
             apiRisk,
             apiConfidence,
-        ) { fieldState, riskClass, confidence ->
+            farmContext,
+        ) { fieldState, syncStatus, riskClass, confidence, (profile, weather, market) ->
 
             fieldState.toDashboardUiState(
+                syncStatus = syncStatus,
                 apiRisk = riskClass,
                 apiConfidence = confidence,
+                profile = profile,
+                weather = weather,
+                market = market,
             )
 
         }.stateIn(
@@ -46,6 +69,20 @@ class DashboardViewModel @Inject constructor(
 
     init {
         monitorRisk()
+    }
+
+    /**
+     * Retry for the Weather card's error state. Goes through the repository's own
+     * refresh so the result still lands in the single shared WeatherState — the
+     * screen never fetches on its own.
+     */
+    fun retryWeather() {
+        viewModelScope.launch { weatherRepository.refresh() }
+    }
+
+    /** Retry for the Market card's error state. */
+    fun retryMarket() {
+        viewModelScope.launch { marketRepository.refresh() }
     }
 
     private fun monitorRisk() {
@@ -113,9 +150,14 @@ class DashboardViewModel @Inject constructor(
  * 3. ML prediction
  * 4. Existing decision engine
  */
-private fun FieldState.toDashboardUiState(
+/** `internal`, not `private` — so `DashboardViewModelTest` can exercise the risk-fusion logic directly without duplicating it. */
+internal fun FieldState.toDashboardUiState(
+    syncStatus: SyncStatus,
     apiRisk: Int?,
     apiConfidence: Float,
+    profile: FarmerProfile,
+    weather: WeatherState,
+    market: MarketState,
 ): DashboardUiState {
 
     val moisture = sensors.soilMoisturePct
@@ -166,6 +208,18 @@ private fun FieldState.toDashboardUiState(
      *
      * Critical real-time sensor conditions override weak ML
      * predictions.
+     *
+     * BUG FIX (Phase 3B): a genuine HIGH from `decision.overallRisk` —
+     * DecisionEngine's own output, which since Phase 3A already fuses
+     * water/heat/pest/disease/region/rain — must never be masked by a
+     * weaker signal from the separate ML risk-fusion classifier
+     * (`mlRisk`). Before this fix, `mlRisk != null -> mlRisk` fired
+     * whenever the ML call had ever succeeded, discarding a real
+     * pest/disease-driven HIGH from the engine in favor of a plain
+     * LOW/MEDIUM ML class. The guard below runs right after the
+     * sensor-critical checks and before every ML-only branch, so HIGH
+     * can never be silently downgraded — LOW/MEDIUM fusion below it is
+     * unchanged.
      */
 
     val overallRisk = when {
@@ -184,6 +238,18 @@ private fun FieldState.toDashboardUiState(
          * EXTREME TEMPERATURE
          */
         extremeHeat ->
+            RiskLevel.HIGH
+
+
+        /*
+         * NEVER MASK A REAL ENGINE HIGH.
+         *
+         * decision.overallRisk already correctly fuses pest, disease,
+         * region rules, and rain outlook (Phase 3A) — if it says HIGH,
+         * the dashboard must say HIGH, regardless of what the separate
+         * ML classifier returned.
+         */
+        decision.overallRisk == RiskLevel.HIGH ->
             RiskLevel.HIGH
 
 
@@ -293,10 +359,38 @@ private fun FieldState.toDashboardUiState(
         cropHealthRisk =
             decision.cropHealthRisk,
 
+        pestRisk =
+            decision.pestRisk,
+
         isDeviceOnline =
             deviceStatus.isOnline,
 
         lastSyncedAt =
             deviceStatus.lastSeenAt,
+
+        dataSourceStatus =
+            syncStatus.toDataSourceStatus(),
+
+        timing =
+            decision.timing,
+
+        expectedBenefit =
+            decision.expectedBenefit,
+
+        reasons =
+            decision.reasons,
+
+        fertilizerRecommendation =
+            decision.fertilizerRecommendation,
+
+        profile = profile,
+
+        diseaseResult = diseaseResult,
+
+        pestResult = pestResult,
+
+        weather = weather,
+
+        market = market,
     )
 }

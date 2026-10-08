@@ -2,6 +2,7 @@ package com.krishinirnay.feature.crophealth
 
 import android.net.Uri
 import androidx.lifecycle.ViewModel
+import com.krishinirnay.core.data.network.CropHealthScanException
 import androidx.lifecycle.viewModelScope
 import com.krishinirnay.core.data.repository.CropHealthRepository
 import com.krishinirnay.core.data.repository.FieldStateRepository
@@ -41,6 +42,7 @@ class CropHealthViewModel @Inject constructor(
                 previewUri = uri,
                 result = null,
                 errorMessage = null,
+                technicalErrorDetail = null,
                 isScanning = true,
             )
         }
@@ -135,9 +137,15 @@ class CropHealthViewModel @Inject constructor(
                             errorMessage =
                                 throwable.message
                                     ?: "Disease analysis failed. Please try again.",
+                            technicalErrorDetail = (throwable as? CropHealthScanException)?.technicalDetail,
                         )
                     }
                 }
         }
+    }
+
+    /** Re-runs the scan on the same photo the farmer already picked — offered next to the error card so a transient failure doesn't force reselecting the image. */
+    fun retry() {
+        _uiState.value.previewUri?.let(::onImageSelected)
     }
 }

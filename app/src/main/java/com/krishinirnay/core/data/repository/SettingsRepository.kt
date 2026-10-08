@@ -17,8 +17,20 @@ interface SettingsRepository {
     val hasSeenHowItWorks: StateFlow<Boolean>
     val lastSyncedAt: StateFlow<Instant?>
 
+    /**
+     * Off by default (Phase 4E) — cloud Gemini is an explicit, opt-in fallback
+     * for AI Insights' explanation polish, never the primary conversational
+     * path, and never called silently. See ExplanationService/AiInsightsViewModel.
+     */
+    val cloudFallbackEnabled: StateFlow<Boolean>
+
+    /** True once the farmer has completed (or skipped) the multi-step onboarding flow — see `feature.onboarding`. */
+    val hasCompletedOnboarding: StateFlow<Boolean>
+
     suspend fun setAppMode(mode: AppMode)
     suspend fun setLanguage(languageTag: String)
     suspend fun setHasSeenHowItWorks(seen: Boolean)
     suspend fun setLastSyncedAt(instant: Instant)
+    suspend fun setCloudFallbackEnabled(enabled: Boolean)
+    suspend fun setHasCompletedOnboarding(completed: Boolean)
 }

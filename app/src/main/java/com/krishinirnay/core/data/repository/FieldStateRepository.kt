@@ -2,6 +2,7 @@ package com.krishinirnay.core.data.repository
 
 import com.krishinirnay.core.data.model.DiseaseResult
 import com.krishinirnay.core.data.model.FieldState
+import com.krishinirnay.core.data.model.PestResult
 import com.krishinirnay.core.data.model.SyncStatus
 import kotlinx.coroutines.flow.StateFlow
 
@@ -29,4 +30,7 @@ interface FieldStateRepository {
      * sensor tick.
      */
     suspend fun recordDiseaseResult(result: DiseaseResult)
+
+    /** Same contract as [recordDiseaseResult], for a real Pest Detection scan result. */
+    suspend fun recordPestResult(result: PestResult)
 }

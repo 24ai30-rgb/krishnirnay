@@ -2,6 +2,9 @@ package com.krishinirnay.core.decision
 
 import com.krishinirnay.core.data.model.DecisionOutput
 import com.krishinirnay.core.data.model.RiskLevel
+import com.krishinirnay.core.decision.region.DefaultRuleSet
+import com.krishinirnay.core.decision.region.RegionCropRuleSet
+import com.krishinirnay.core.fertilizer.FertilizerRecommendation
 
 /**
  * Pure Kotlin, no Android/Firebase/network imports — works fully offline
@@ -10,36 +13,55 @@ import com.krishinirnay.core.data.model.RiskLevel
  * wraps around [recommendation]/[reasons] elsewhere to polish the wording,
  * never to compute the risk itself.
  *
- * NPK/pH thresholds in [DecisionRules] are defined but not yet consumed
- * here — [DecisionOutput] has no dedicated slot for them, and Phase 1
- * hardware never populates those readings. Wiring them in is a Phase 2
- * change to this file plus [DecisionOutput]'s shape, not a change here
- * alone.
+ * [ruleSet] is the Phase 2 region/crop rule layer (see `core/decision/region`) —
+ * it only ever adjusts thresholds/escalation knobs the interface exposes; the
+ * engine's own logic never branches on a region or crop name directly, which is
+ * what keeps adding a new region+crop a new [RegionCropRuleSet], not a new `when`
+ * branch here.
+ *
+ * [fertilizerRecommendation] (Phase 4B) is computed elsewhere (by
+ * [com.krishinirnay.core.fertilizer.FertilizerAdvisor], called from
+ * [com.krishinirnay.core.data.composite.FieldDecisionResolver], which has the
+ * farmer-profile context this engine deliberately doesn't take on) and simply
+ * passed through into the returned [DecisionOutput] — it plays no part in
+ * [overallRisk]/[recommendation], so it can never mask a real risk.
  */
 object DecisionEngine {
 
-    fun evaluate(input: DecisionInput): DecisionOutput {
+    fun evaluate(
+        input: DecisionInput,
+        ruleSet: RegionCropRuleSet = DefaultRuleSet,
+        fertilizerRecommendation: FertilizerRecommendation? = null,
+        marketInsight: MarketInsight? = null,
+    ): DecisionOutput {
         val waterStressRisk = input.modelOutput?.riskLevel
-            ?: waterStressRiskFromMoisture(input.sensors.soilMoisturePct)
+            ?: waterStressRiskFromMoisture(input.sensors.soilMoisturePct, ruleSet)
         val heatRisk = heatRiskFromTemperature(input.sensors.temperatureC)
-        val cropHealthRisk = input.diseaseResult?.riskLevel ?: RiskLevel.UNKNOWN
+        val cropHealthRisk = cropHealthRiskFrom(input)
+        val pestRisk = pestRiskFrom(input, ruleSet)
 
-        val overallRisk = maxRisk(listOf(waterStressRisk, heatRisk, cropHealthRisk))
+        val overallRisk = maxRisk(listOf(waterStressRisk, heatRisk, cropHealthRisk, pestRisk))
+        val recommendation = buildRecommendation(waterStressRisk, heatRisk, cropHealthRisk, pestRisk)
 
         return DecisionOutput(
             overallRisk = overallRisk,
             waterStressRisk = waterStressRisk,
             heatRisk = heatRisk,
             cropHealthRisk = cropHealthRisk,
-            recommendation = buildRecommendation(overallRisk, waterStressRisk, heatRisk),
+            recommendation = recommendation,
             confidence = input.modelOutput?.probability ?: 1f,
-            reasons = buildReasons(input, waterStressRisk, heatRisk, cropHealthRisk),
+            reasons = buildReasons(input, waterStressRisk, heatRisk, cropHealthRisk, pestRisk),
+            pestRisk = pestRisk,
+            timing = buildTiming(overallRisk, heatRisk),
+            expectedBenefit = buildExpectedBenefit(overallRisk),
+            fertilizerRecommendation = fertilizerRecommendation,
+            marketInsight = marketInsight,
         )
     }
 
-    private fun waterStressRiskFromMoisture(soilMoisturePct: Float): RiskLevel = when {
-        soilMoisturePct < DecisionRules.SOIL_MOISTURE_HIGH_RISK_BELOW_PCT -> RiskLevel.HIGH
-        soilMoisturePct < DecisionRules.SOIL_MOISTURE_MEDIUM_RISK_BELOW_PCT -> RiskLevel.MEDIUM
+    private fun waterStressRiskFromMoisture(soilMoisturePct: Float, ruleSet: RegionCropRuleSet): RiskLevel = when {
+        soilMoisturePct < ruleSet.soilMoistureHighRiskBelowPct -> RiskLevel.HIGH
+        soilMoisturePct < ruleSet.soilMoistureMediumRiskBelowPct -> RiskLevel.MEDIUM
         else -> RiskLevel.LOW
     }
 
@@ -50,10 +72,46 @@ object DecisionEngine {
     }
 
     /**
+     * A real disease scan's risk, escalated one level when rain is expected soon
+     * under high humidity — the exact "disease + high humidity + rain expected"
+     * scenario this phase's brief asks for, since damp conditions genuinely favor
+     * fungal/bacterial spread. Never escalates an UNKNOWN (no scan yet) into a
+     * guessed risk.
+     */
+    private fun cropHealthRiskFrom(input: DecisionInput): RiskLevel {
+        val base = input.diseaseResult?.riskLevel ?: RiskLevel.UNKNOWN
+        if (base == RiskLevel.UNKNOWN) return base
+        val humidConditionsFavorDisease = input.rainOutlook == RainOutlook.RAIN_EXPECTED_SOON &&
+            input.sensors.humidityPct >= DecisionRules.HUMIDITY_DISEASE_ESCALATION_AT_OR_ABOVE_PCT
+        return if (humidConditionsFavorDisease) escalate(base) else base
+    }
+
+    /**
+     * A real pest scan's risk, escalated one level when the crop is currently in
+     * one of [RegionCropRuleSet.pestVulnerableCropStages] — e.g. cotton at
+     * flowering/boll stage, per [com.krishinirnay.core.decision.region.VidarbhaCottonRules].
+     * Never escalates an UNKNOWN (no scan yet) or a "nothing detected" LOW.
+     */
+    private fun pestRiskFrom(input: DecisionInput, ruleSet: RegionCropRuleSet): RiskLevel {
+        val result = input.pestResult ?: return RiskLevel.UNKNOWN
+        if (!result.detected) return RiskLevel.LOW
+        val atVulnerableStage = input.cropStage != null &&
+            ruleSet.pestVulnerableCropStages.any { it.equals(input.cropStage, ignoreCase = true) }
+        return if (atVulnerableStage) escalate(result.riskLevel) else result.riskLevel
+    }
+
+    private fun escalate(risk: RiskLevel): RiskLevel = when (risk) {
+        RiskLevel.LOW -> RiskLevel.MEDIUM
+        RiskLevel.MEDIUM -> RiskLevel.HIGH
+        RiskLevel.HIGH -> RiskLevel.HIGH
+        RiskLevel.UNKNOWN -> RiskLevel.UNKNOWN
+    }
+
+    /**
      * UNKNOWN is excluded from the comparison — "not a vote," never
      * "zero risk." Water stress and heat are always LOW/MEDIUM/HIGH
-     * (never UNKNOWN), so this only ever drops cropHealthRisk from the
-     * comparison when no scan has been run yet.
+     * (never UNKNOWN), so this only ever drops cropHealthRisk/pestRisk
+     * from the comparison when no scan has been run yet.
      */
     private fun maxRisk(risks: List<RiskLevel>): RiskLevel {
         val ranked = risks.filter { it != RiskLevel.UNKNOWN }
@@ -68,23 +126,37 @@ object DecisionEngine {
     }
 
     private fun buildRecommendation(
-        overallRisk: RiskLevel,
         waterStressRisk: RiskLevel,
         heatRisk: RiskLevel,
-    ): RecommendationOutcome = when (overallRisk) {
-        RiskLevel.HIGH -> when {
-            waterStressRisk == RiskLevel.HIGH && heatRisk == RiskLevel.HIGH -> RecommendationOutcome.IrrigateSevere
-            waterStressRisk == RiskLevel.HIGH -> RecommendationOutcome.IrrigateWaterHigh
-            heatRisk == RiskLevel.HIGH -> RecommendationOutcome.ShadeOrIrrigateHeat
-            else -> RecommendationOutcome.ReviewCropHealthHigh
-        }
-        RiskLevel.MEDIUM -> when {
-            waterStressRisk == RiskLevel.MEDIUM -> RecommendationOutcome.PlanIrrigationSoon
-            heatRisk == RiskLevel.MEDIUM -> RecommendationOutcome.MonitorTemperature
-            else -> RecommendationOutcome.ReviewCropHealthModerate
-        }
-        RiskLevel.LOW -> RecommendationOutcome.HealthyRange
-        RiskLevel.UNKNOWN -> RecommendationOutcome.NotEnoughData
+        cropHealthRisk: RiskLevel,
+        pestRisk: RiskLevel,
+    ): RecommendationOutcome = when {
+        waterStressRisk == RiskLevel.HIGH && heatRisk == RiskLevel.HIGH -> RecommendationOutcome.IrrigateSevere
+        waterStressRisk == RiskLevel.HIGH -> RecommendationOutcome.IrrigateWaterHigh
+        heatRisk == RiskLevel.HIGH -> RecommendationOutcome.ShadeOrIrrigateHeat
+        pestRisk == RiskLevel.HIGH -> RecommendationOutcome.TreatPestDetected
+        cropHealthRisk == RiskLevel.HIGH -> RecommendationOutcome.ReviewCropHealthHigh
+        waterStressRisk == RiskLevel.MEDIUM -> RecommendationOutcome.PlanIrrigationSoon
+        heatRisk == RiskLevel.MEDIUM -> RecommendationOutcome.MonitorTemperature
+        pestRisk == RiskLevel.MEDIUM -> RecommendationOutcome.MonitorPestRisk
+        cropHealthRisk == RiskLevel.MEDIUM -> RecommendationOutcome.ReviewCropHealthModerate
+        waterStressRisk == RiskLevel.LOW && heatRisk == RiskLevel.LOW -> RecommendationOutcome.HealthyRange
+        else -> RecommendationOutcome.NotEnoughData
+    }
+
+    private fun buildTiming(overallRisk: RiskLevel, heatRisk: RiskLevel): TimingOutcome = when {
+        overallRisk == RiskLevel.HIGH -> TimingOutcome.Immediate
+        overallRisk == RiskLevel.MEDIUM && heatRisk == RiskLevel.MEDIUM -> TimingOutcome.ThisEvening
+        overallRisk == RiskLevel.MEDIUM -> TimingOutcome.Within24Hours
+        overallRisk == RiskLevel.LOW -> TimingOutcome.NoActionNeeded
+        else -> TimingOutcome.NoActionNeeded
+    }
+
+    private fun buildExpectedBenefit(overallRisk: RiskLevel): BenefitOutcome = when (overallRisk) {
+        RiskLevel.HIGH -> BenefitOutcome.PreventCropLoss
+        RiskLevel.MEDIUM -> BenefitOutcome.ImprovedYield
+        RiskLevel.LOW -> BenefitOutcome.HealthyGrowthContinues
+        RiskLevel.UNKNOWN -> BenefitOutcome.Unknown
     }
 
     private fun buildReasons(
@@ -92,6 +164,7 @@ object DecisionEngine {
         waterStressRisk: RiskLevel,
         heatRisk: RiskLevel,
         cropHealthRisk: RiskLevel,
+        pestRisk: RiskLevel,
     ): List<ReasonOutcome> {
         val reasons = mutableListOf<ReasonOutcome>()
         val sensors = input.sensors
@@ -108,6 +181,16 @@ object DecisionEngine {
             ReasonOutcome.CropHealthNotAssessed
         } else {
             ReasonOutcome.CropHealthAssessed(input.diseaseResult?.displayName, cropHealthRisk)
+        }
+
+        reasons += if (pestRisk == RiskLevel.UNKNOWN) {
+            ReasonOutcome.PestNotAssessed
+        } else {
+            ReasonOutcome.PestAssessed(input.pestResult?.label, pestRisk)
+        }
+
+        if (input.rainOutlook == RainOutlook.RAIN_EXPECTED_SOON) {
+            reasons += ReasonOutcome.RainExpectedSoon
         }
 
         if (!input.deviceOnline) {
