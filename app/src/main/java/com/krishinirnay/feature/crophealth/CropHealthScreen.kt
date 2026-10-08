@@ -1,5 +1,18 @@
 package com.krishinirnay.feature.crophealth
 
+import androidx.compose.ui.graphics.Color
+import com.krishinirnay.core.designsystem.theme.KrishiTheme
+import com.krishinirnay.core.designsystem.motion.LocalMotionEnabled
+import com.krishinirnay.core.designsystem.motion.KrishiMotion
+import com.krishinirnay.core.designsystem.motion.pressClickable
+import com.krishinirnay.core.designsystem.motion.pulse
+import com.krishinirnay.core.designsystem.motion.enterStagger
+import com.krishinirnay.core.designsystem.components.AnimatedNumber
+import com.krishinirnay.core.designsystem.components.HeroCard
+import kotlin.math.roundToInt
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.Animatable
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -200,72 +213,38 @@ fun CropHealthScreen(
 private fun ProfessionalScanCard(
     onClick: () -> Unit,
 ) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 1.dp,
-        shadowElevation = 1.dp,
-    ) {
-
-        Row(
-            modifier = Modifier.padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-
+    val c = KrishiTheme.colors
+    HeroCard(modifier = Modifier.enterStagger(0).pressClickable(onClick = onClick)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
-                modifier = Modifier
-                    .size(58.dp)
-                    .background(
-                        MaterialTheme.colorScheme.primaryContainer,
-                        CircleShape,
-                    ),
+                modifier = Modifier.size(58.dp).background(Color.White.copy(alpha = 0.16f), CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(
-                    imageVector = Icons.Rounded.CameraAlt,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(29.dp),
-                )
+                Icon(Icons.Rounded.CameraAlt, contentDescription = null, tint = c.lime, modifier = Modifier.size(29.dp).pulse(true))
             }
-
             Spacer(Modifier.size(16.dp))
-
-            Column(
-                modifier = Modifier.weight(1f),
-            ) {
-
-                Text(
-                    text = "Scan a leaf",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                )
-
+            Column(modifier = Modifier.weight(1f)) {
+                Text("Scan a leaf", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = Color.White)
                 Spacer(Modifier.size(4.dp))
-
-                Text(
-                    text = "Upload a clear crop image",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Text("Upload a clear crop image", style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.85f))
             }
-
-            Icon(
-                imageVector = Icons.Rounded.Image,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(25.dp),
-            )
+        }
+        Spacer(Modifier.size(16.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(50)).background(c.lime).padding(vertical = 12.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(Icons.Rounded.Image, contentDescription = null, tint = c.onLime, modifier = Modifier.size(20.dp))
+            Spacer(Modifier.size(8.dp))
+            Text("Choose photo", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold, color = c.onLime)
         }
     }
 }
 
 
 // ========================================================================
-// DISEASE RESULT
+// DISEASE RESULT — hero with photo, name, risk and animated confidence
 // ========================================================================
 
 @Composable
@@ -275,205 +254,58 @@ private fun ProfessionalDiseaseResult(
     confidence: Float,
     riskLevel: RiskLevel,
 ) {
-
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 2.dp,
-        shadowElevation = 2.dp,
-    ) {
-
-        Column(
-            modifier = Modifier.padding(18.dp),
-        ) {
-
-            // ------------------------------------------------------------
-            // HEADER
-            // ------------------------------------------------------------
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
+    val c = KrishiTheme.colors
+    val pct = (confidence.coerceIn(0f, 1f) * 100f)
+    val bar = remember { Animatable(0f) }
+    val motion = LocalMotionEnabled.current
+    LaunchedEffect(pct, motion) {
+        if (motion) bar.animateTo(pct / 100f, tween(KrishiMotion.EMPHASIS * 2)) else bar.snapTo(pct / 100f)
+    }
+    HeroCard(modifier = Modifier.enterStagger(1)) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+            Box(
+                modifier = Modifier.size(104.dp).clip(RoundedCornerShape(18.dp)).background(Color.White.copy(alpha = 0.16f)),
             ) {
-
-                Column(
-                    modifier = Modifier.weight(1f),
-                ) {
-
-                    Text(
-                        text = "AI Analysis",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold,
+                if (previewUri != null) {
+                    AsyncImage(
+                        model = previewUri,
+                        contentDescription = "Scanned crop leaf",
+                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
                     )
-
-                    Spacer(Modifier.size(3.dp))
-
-                    Text(
-                        text = "Disease detected",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                }
-
-                Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                ) {
-
-                    Row(
-                        modifier = Modifier.padding(
-                            horizontal = 10.dp,
-                            vertical = 6.dp,
-                        ),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-
-                        Icon(
-                            imageVector = Icons.Rounded.AutoAwesome,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(15.dp),
-                        )
-
-                        Spacer(Modifier.size(5.dp))
-
-                        Text(
-                            text = "AI",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold,
-                        )
-                    }
+                } else {
+                    Icon(Icons.Rounded.Image, contentDescription = null, tint = Color.White, modifier = Modifier.align(Alignment.Center).size(32.dp))
                 }
             }
-
-            Spacer(Modifier.size(18.dp))
-
-            // ------------------------------------------------------------
-            // IMAGE + DISEASE
-            // ------------------------------------------------------------
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Top,
-            ) {
-
-                Box(
-                    modifier = Modifier
-                        .size(118.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(
-                            MaterialTheme.colorScheme.surfaceVariant,
-                        ),
-                ) {
-
-                    if (previewUri != null) {
-
-                        AsyncImage(
-                            model = previewUri,
-                            contentDescription = "Scanned crop leaf",
-                            contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize(),
-                        )
-
-                    } else {
-
-                        Icon(
-                            imageVector = Icons.Rounded.Image,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .size(32.dp),
-                        )
-                    }
-                }
-
-                Spacer(Modifier.size(16.dp))
-
-                Column(
-                    modifier = Modifier.weight(1f),
-                ) {
-
-                    RiskBadge(
-                        level = riskLevel,
-                        size = RiskBadgeSize.Compact,
-                    )
-
-                    Spacer(Modifier.size(10.dp))
-
-                    Text(
-                        text = diseaseName,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        lineHeight = MaterialTheme.typography.titleLarge.lineHeight,
-                    )
-
-                    Spacer(Modifier.size(5.dp))
-
-                    Text(
-                        text = "Detected from crop image",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-
-            Spacer(Modifier.size(20.dp))
-
-            HorizontalDivider(
-                color = MaterialTheme.colorScheme.outlineVariant,
-            )
-
             Spacer(Modifier.size(16.dp))
-
-            // ------------------------------------------------------------
-            // CONFIDENCE
-            // ------------------------------------------------------------
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-
-                Text(
-                    text = "Confidence",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                Spacer(Modifier.weight(1f))
-
-                Text(
-                    text = "${(confidence * 100).toInt()}%",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                )
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Rounded.AutoAwesome, contentDescription = null, tint = c.lime, modifier = Modifier.size(15.dp))
+                    Spacer(Modifier.size(5.dp))
+                    Text("AI ANALYSIS", style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = 0.85f))
+                }
+                Spacer(Modifier.size(6.dp))
+                Text(diseaseName, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = Color.White)
+                Spacer(Modifier.size(8.dp))
+                RiskBadge(level = riskLevel, size = RiskBadgeSize.Compact)
             }
-
-            Spacer(Modifier.size(8.dp))
-
-            LinearProgressIndicator(
-                progress = { confidence.coerceIn(0f, 1f) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(7.dp)
-                    .clip(RoundedCornerShape(10.dp)),
-                color = MaterialTheme.colorScheme.primary,
-                trackColor = MaterialTheme.colorScheme.primaryContainer,
-            )
-
-            Spacer(Modifier.size(7.dp))
-
-            Text(
-                text = confidenceMessage(confidence),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+        }
+        Spacer(Modifier.size(18.dp))
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
+            Text("Confidence", style = MaterialTheme.typography.labelLarge, color = Color.White.copy(alpha = 0.85f), modifier = Modifier.weight(1f))
+            AnimatedNumber(
+                target = pct,
+                format = { "${it.roundToInt()}%" },
+                style = MaterialTheme.typography.displaySmall,
+                color = c.lime,
             )
         }
+        Spacer(Modifier.size(8.dp))
+        Box(Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(50)).background(Color.White.copy(alpha = 0.18f))) {
+            Box(Modifier.fillMaxWidth(bar.value).height(8.dp).clip(RoundedCornerShape(50)).background(c.lime))
+        }
+        Spacer(Modifier.size(8.dp))
+        Text(confidenceMessage(confidence), style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.85f))
     }
 }
 

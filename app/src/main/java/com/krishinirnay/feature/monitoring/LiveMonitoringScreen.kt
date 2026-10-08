@@ -1,5 +1,14 @@
 package com.krishinirnay.feature.monitoring
 
+import com.krishinirnay.core.designsystem.motion.pulse
+import com.krishinirnay.core.designsystem.motion.enterStagger
+import com.krishinirnay.core.designsystem.components.GaugeFormat
+import com.krishinirnay.core.designsystem.components.RingGauge
+import com.krishinirnay.core.designsystem.components.HeroCard
+import java.util.Locale
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -81,85 +90,100 @@ fun LiveMonitoringScreen(
 
 @Composable
 private fun LiveMonitoringContent(uiState: LiveMonitoringUiState, strings: AppStrings, modifier: Modifier = Modifier) {
-    Column(modifier = modifier.fillMaxSize().padding(16.dp)) {
-        KnCard {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier.size(8.dp).clip(CircleShape)
-                        .background(if (uiState.isOnline) KrishiTheme.colors.riskLow else KrishiTheme.colors.riskUnknown),
-                )
-                Spacer(Modifier.size(10.dp))
-                Text(
-                    text = if (uiState.isOnline) strings.dashboardDeviceOnline else strings.dashboardDeviceOffline,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Spacer(Modifier.weight(1f))
-                if (uiState.batteryPct != null) {
-                    Icon(Icons.Rounded.BatteryStd, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
-                    Spacer(Modifier.size(4.dp))
-                    Text("${uiState.batteryPct}%", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    val c = KrishiTheme.colors
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        item(key = "hero") {
+            HeroCard(modifier = Modifier.enterStagger(0)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier.size(10.dp).pulse(uiState.isOnline).clip(CircleShape)
+                            .background(if (uiState.isOnline) c.lime else Color.White.copy(alpha = 0.5f)),
+                    )
+                    Spacer(Modifier.size(8.dp))
+                    Text(
+                        text = if (uiState.isOnline) strings.dashboardDeviceOnline else strings.dashboardDeviceOffline,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = Color.White,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
+                    )
+                    if (uiState.batteryPct != null) {
+                        Icon(Icons.Rounded.BatteryStd, contentDescription = null, tint = Color.White.copy(alpha = 0.85f), modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.size(4.dp))
+                        Text("${uiState.batteryPct}%", style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = 0.85f))
+                    }
                 }
+                Spacer(Modifier.size(16.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                    val heroGauge = Modifier.weight(1f)
+                    RingGauge(
+                        GaugeFormat.fraction(uiState.soilMoisturePct, 100f), GaugeFormat.percent(uiState.soilMoisturePct), strings.soilMoisture,
+                        c.lime, heroGauge, textColor = Color.White, labelColor = Color.White.copy(alpha = 0.85f), trackColor = Color.White.copy(alpha = 0.18f),
+                    )
+                    RingGauge(
+                        GaugeFormat.fraction(uiState.temperatureC, 50f), "${uiState.temperatureC.roundToInt()}°", strings.temperature,
+                        c.lime, heroGauge, textColor = Color.White, labelColor = Color.White.copy(alpha = 0.85f), trackColor = Color.White.copy(alpha = 0.18f),
+                    )
+                    RingGauge(
+                        GaugeFormat.fraction(uiState.humidityPct, 100f), GaugeFormat.percent(uiState.humidityPct), strings.humidity,
+                        c.lime, heroGauge, textColor = Color.White, labelColor = Color.White.copy(alpha = 0.85f), trackColor = Color.White.copy(alpha = 0.18f),
+                    )
+                }
+                Spacer(Modifier.size(12.dp))
+                Text(
+                    text = String.format(strings.lastUpdatedTemplate, uiState.lastUpdatedAt.toRelativeLabel(strings)),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color.White.copy(alpha = 0.8f),
+                )
             }
         }
 
-        Spacer(Modifier.size(14.dp))
-
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.weight(1f),
-        ) {
-            item {
+        item(key = "tiles1") {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth().enterStagger(1)) {
                 MetricTile(
                     icon = Icons.Rounded.WaterDrop,
                     value = uiState.soilMoisturePct.roundToInt().toString(),
                     unit = "%",
                     label = strings.soilMoisture,
-                    accentColor = Color(0xFF2F80ED),
-                    modifier = Modifier.fillMaxWidth(),
+                    accentColor = c.info,
+                    modifier = Modifier.weight(1f),
                 )
-            }
-            item {
                 MetricTile(
                     icon = Icons.Rounded.Thermostat,
                     value = uiState.temperatureC.roundToInt().toString(),
                     unit = "°C",
                     label = strings.temperature,
-                    accentColor = Color(0xFFF2994A),
-                    modifier = Modifier.fillMaxWidth(),
+                    accentColor = c.accent,
+                    modifier = Modifier.weight(1f),
                 )
             }
-            item {
+        }
+
+        item(key = "tiles2") {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth().enterStagger(2)) {
                 MetricTile(
                     icon = Icons.Rounded.Opacity,
                     value = uiState.humidityPct.roundToInt().toString(),
                     unit = "%",
                     label = strings.humidity,
-                    accentColor = Color(0xFF12A594),
-                    modifier = Modifier.fillMaxWidth(),
+                    accentColor = c.secondary,
+                    modifier = Modifier.weight(1f),
                 )
-            }
-            item {
                 MetricTile(
                     icon = Icons.Rounded.Science,
-                    value = uiState.ph?.let { "%.1f".format(it) } ?: "—",
+                    value = uiState.ph?.let { String.format(Locale.US, "%.1f", it) } ?: "—",
                     unit = "",
                     label = strings.phLabel,
-                    accentColor = Color(0xFF8E5FD1),
+                    accentColor = MaterialTheme.colorScheme.primary,
                     enabled = uiState.ph != null,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.weight(1f),
                 )
             }
         }
-
-        Text(
-            text = String.format(strings.lastUpdatedTemplate, uiState.lastUpdatedAt.toRelativeLabel(strings)),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-        )
     }
 }

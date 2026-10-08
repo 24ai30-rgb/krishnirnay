@@ -46,6 +46,9 @@ fun RingGauge(
     color: Color,
     modifier: Modifier = Modifier,
     size: Dp = 64.dp,
+    textColor: Color = MaterialTheme.colorScheme.onSurface,
+    labelColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    trackColor: Color = KrishiTheme.colors.surfaceAlt,
 ) {
     val motion = LocalMotionEnabled.current
     val target = fraction ?: 0f
@@ -54,7 +57,7 @@ fun RingGauge(
         if (motion) sweep.animateTo(target, tween(KrishiMotion.EMPHASIS * 2, easing = FastOutSlowInEasing))
         else sweep.snapTo(target)
     }
-    val track = KrishiTheme.colors.surfaceAlt
+    val track = trackColor
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
@@ -70,9 +73,9 @@ fun RingGauge(
                 },
             contentAlignment = Alignment.Center,
         ) {
-            Text(valueText, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text(valueText, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = textColor)
         }
         Spacer(Modifier.size(6.dp))
-        Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(label, style = MaterialTheme.typography.labelMedium, color = labelColor, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
