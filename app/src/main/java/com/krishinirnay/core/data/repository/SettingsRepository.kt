@@ -1,6 +1,7 @@
 package com.krishinirnay.core.data.repository
 
 import com.krishinirnay.core.data.model.AppMode
+import com.krishinirnay.core.data.model.ThemeMode
 import java.time.Instant
 import kotlinx.coroutines.flow.StateFlow
 
@@ -27,10 +28,14 @@ interface SettingsRepository {
     /** True once the farmer has completed (or skipped) the multi-step onboarding flow — see `feature.onboarding`. */
     val hasCompletedOnboarding: StateFlow<Boolean>
 
+    /** Light / Dark / follow-system appearance; defaults to SYSTEM. */
+    val themeMode: StateFlow<ThemeMode>
+
     suspend fun setAppMode(mode: AppMode)
     suspend fun setLanguage(languageTag: String)
     suspend fun setHasSeenHowItWorks(seen: Boolean)
     suspend fun setLastSyncedAt(instant: Instant)
     suspend fun setCloudFallbackEnabled(enabled: Boolean)
     suspend fun setHasCompletedOnboarding(completed: Boolean)
+    suspend fun setThemeMode(mode: ThemeMode)
 }

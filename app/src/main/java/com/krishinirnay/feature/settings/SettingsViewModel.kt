@@ -1,5 +1,6 @@
 package com.krishinirnay.feature.settings
 
+import com.krishinirnay.core.data.model.ThemeMode
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.krishinirnay.BuildConfig
@@ -34,15 +35,16 @@ class SettingsViewModel @Inject constructor(
     private val diagnosticsState = MutableStateFlow(false to null as LocalLlmDiagnostics?)
 
     val uiState: StateFlow<SettingsUiState> = combine(
-        combine(settingsRepository.appMode, settingsRepository.language, settingsRepository.cloudFallbackEnabled, ::Triple),
+        combine(settingsRepository.appMode, settingsRepository.language, settingsRepository.cloudFallbackEnabled, settingsRepository.themeMode, ::AppearancePrefs),
         combine(localLlmRepository.status, localLlmRepository.activeProviderKind, ::Pair),
         profileRepository.profile,
         diagnosticsState,
         onDeviceModelManager.downloadState,
-    ) { (mode, language, cloudFallbackEnabled), (aiStatus, providerKind), profile, (isChecking, diagnostics), onDeviceModelState ->
+    ) { (mode, language, cloudFallbackEnabled, themeMode), (aiStatus, providerKind), profile, (isChecking, diagnostics), onDeviceModelState ->
         SettingsUiState(
             appMode = mode,
             language = language,
+            themeMode = themeMode,
             cloudFallbackEnabled = cloudFallbackEnabled,
             aiStatus = aiStatus,
             aiProviderKind = providerKind,
@@ -91,6 +93,10 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch { settingsRepository.setAppMode(mode) }
     }
 
+    fun setThemeMode(mode: ThemeMode) {
+        viewModelScope.launch { settingsRepository.setThemeMode(mode) }
+    }
+
     fun setLanguage(languageTag: String) {
         viewModelScope.launch { settingsRepository.setLanguage(languageTag) }
     }
@@ -109,3 +115,11 @@ class SettingsViewModel @Inject constructor(
         authRepository.logout()
     }
 }
+
+
+private data class AppearancePrefs(
+    val appMode: AppMode,
+    val language: String,
+    val cloudFallbackEnabled: Boolean,
+    val themeMode: ThemeMode,
+)

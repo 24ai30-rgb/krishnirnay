@@ -1,5 +1,7 @@
 package com.krishinirnay.feature.settings
 
+import com.krishinirnay.core.data.model.ThemeMode
+
 import com.krishinirnay.core.data.model.AppMode
 import com.krishinirnay.core.llm.local.AiProviderKind
 import com.krishinirnay.core.llm.local.LocalLlmDiagnostics
@@ -11,6 +13,7 @@ data class SettingsUiState(
     // the wrong selection before the real preference value arrives.
     val appMode: AppMode = AppMode.LIVE,
     val language: String = "en",
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val cloudFallbackEnabled: Boolean = false,
     // Never a fake "AI online" status — see LocalLlmRepository.
     val aiStatus: LocalLlmStatus = LocalLlmStatus.LOADING,

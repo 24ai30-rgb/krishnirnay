@@ -1,5 +1,6 @@
 package com.krishinirnay.feature.settings
 
+import com.krishinirnay.core.data.model.ThemeMode
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -89,6 +90,18 @@ fun SettingsScreen(
                     ),
                     selected = uiState.language,
                     onSelect = viewModel::setLanguage,
+                )
+                Spacer(Modifier.size(16.dp))
+                Text(strings.settingsTheme, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+                Spacer(Modifier.size(8.dp))
+                SegmentedToggle(
+                    options = listOf(
+                        strings.themeSystem to ThemeMode.SYSTEM,
+                        strings.themeLight to ThemeMode.LIGHT,
+                        strings.themeDark to ThemeMode.DARK,
+                    ),
+                    selected = uiState.themeMode,
+                    onSelect = viewModel::setThemeMode,
                 )
                 Spacer(Modifier.size(16.dp))
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {

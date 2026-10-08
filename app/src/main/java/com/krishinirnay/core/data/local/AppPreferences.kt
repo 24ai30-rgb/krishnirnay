@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.krishinirnay.core.common.ApplicationScope
 import com.krishinirnay.core.data.model.AppMode
+import com.krishinirnay.core.data.model.ThemeMode
 import com.krishinirnay.core.data.repository.SettingsRepository
 import java.time.Instant
 import javax.inject.Inject
@@ -36,6 +37,7 @@ class AppPreferences @Inject constructor(
         val LAST_SYNCED_AT_MILLIS = longPreferencesKey("last_synced_at_millis")
         val CLOUD_FALLBACK_ENABLED = booleanPreferencesKey("cloud_fallback_enabled")
         val HAS_COMPLETED_ONBOARDING = booleanPreferencesKey("has_completed_onboarding")
+        val THEME_MODE = stringPreferencesKey("theme_mode")
     }
 
     /**
@@ -95,6 +97,14 @@ class AppPreferences @Inject constructor(
 
     override suspend fun setHasCompletedOnboarding(completed: Boolean) {
         dataStore.edit { it[Keys.HAS_COMPLETED_ONBOARDING] = completed }
+    }
+
+    override val themeMode: StateFlow<ThemeMode> = dataStore.data
+        .map { ThemeMode.fromStored(it[Keys.THEME_MODE]) }
+        .stateIn(scope, SharingStarted.Eagerly, ThemeMode.SYSTEM)
+
+    override suspend fun setThemeMode(mode: ThemeMode) {
+        dataStore.edit { it[Keys.THEME_MODE] = mode.name }
     }
 
     private companion object {

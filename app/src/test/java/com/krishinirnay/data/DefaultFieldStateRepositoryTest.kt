@@ -14,6 +14,7 @@ import com.krishinirnay.core.data.repository.FieldStateRepository
 import com.krishinirnay.core.data.repository.MockControls
 import com.krishinirnay.core.decision.RecommendationOutcome
 import com.krishinirnay.core.data.repository.SettingsRepository
+import com.krishinirnay.core.data.model.ThemeMode
 import com.krishinirnay.core.mock.SensorScenario
 import java.time.Instant
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -95,6 +96,8 @@ private class FakeSettingsRepository(initialMode: AppMode) : SettingsRepository 
     override suspend fun setLastSyncedAt(instant: Instant) = Unit
     override suspend fun setHasCompletedOnboarding(completed: Boolean) = Unit
     override suspend fun setCloudFallbackEnabled(enabled: Boolean) = Unit
+    override val themeMode = MutableStateFlow(ThemeMode.SYSTEM)
+    override suspend fun setThemeMode(mode: ThemeMode) { themeMode.value = mode }
 }
 
 class DefaultFieldStateRepositoryTest {
