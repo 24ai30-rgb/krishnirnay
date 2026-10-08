@@ -60,3 +60,7 @@ val DarkRiskHigh = Color(0xFFFF6B6B)
 val DarkRiskHighContainer = Color(0xFF3D1A1A)
 val DarkRiskUnknown = Color(0xFF7C8B82)
 val DarkRiskUnknownContainer = Color(0xFF1F2924)
+
+// Floating bottom bar — fixed dark ink in both modes so the lime selection always has contrast.
+val NavBarInk = Color(0xFF0F2A1C)
+val NavBarMuted = Color(0xFF9FB3A6)

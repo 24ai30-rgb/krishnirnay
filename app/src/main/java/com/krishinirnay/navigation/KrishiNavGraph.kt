@@ -1,5 +1,8 @@
 package com.krishinirnay.navigation
 
+import androidx.compose.material3.MaterialTheme
+import com.krishinirnay.core.designsystem.motion.KrishiMotion
+import androidx.compose.animation.scaleIn
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -72,20 +75,16 @@ private fun KrishiNavGraphContent(
         startDestination = authGateViewModel.startDestination,
         modifier = modifier,
         enterTransition = {
-            slideInHorizontally(
-                initialOffsetX = { it / 4 },
-            ) + fadeIn()
+            slideInHorizontally(KrishiMotion.firm()) { it * 3 / 10 } + fadeIn(tween(KrishiMotion.STANDARD))
         },
         exitTransition = {
-            fadeOut(targetAlpha = 0.4f)
+            slideOutHorizontally(KrishiMotion.firm()) { -it / 10 } + fadeOut(tween(KrishiMotion.QUICK), targetAlpha = 0.6f)
         },
         popEnterTransition = {
-            fadeIn(initialAlpha = 0.4f)
+            slideInHorizontally(KrishiMotion.firm()) { -it / 10 } + fadeIn(tween(KrishiMotion.STANDARD), initialAlpha = 0.6f)
         },
         popExitTransition = {
-            slideOutHorizontally(
-                targetOffsetX = { it / 4 },
-            ) + fadeOut()
+            slideOutHorizontally(KrishiMotion.firm()) { it * 3 / 10 } + fadeOut(tween(KrishiMotion.QUICK))
         },
     ) {
 
@@ -421,6 +420,7 @@ private fun MainScaffold(
     val innerNavController = rememberNavController()
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             val backStackEntry by
                 innerNavController.currentBackStackEntryAsState()
@@ -455,8 +455,8 @@ private fun MainScaffold(
             // A bottom-tab switch is a lateral move, not a drill-down — a
             // quick crossfade (not the outer graph's slide) reads as "same
             // level, different view" instead of implying a stack push.
-            enterTransition = { fadeIn(animationSpec = tween(160)) },
-            exitTransition = { fadeOut(animationSpec = tween(120)) },
+            enterTransition = { fadeIn(tween(KrishiMotion.STANDARD)) + scaleIn(tween(KrishiMotion.STANDARD), initialScale = 0.96f) },
+            exitTransition = { fadeOut(tween(KrishiMotion.QUICK)) },
         ) {
 
             // =====================================================
