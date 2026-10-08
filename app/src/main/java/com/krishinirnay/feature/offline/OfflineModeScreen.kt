@@ -1,5 +1,8 @@
 package com.krishinirnay.feature.offline
 
+import com.krishinirnay.core.designsystem.motion.enterStagger
+import com.krishinirnay.core.designsystem.components.HeroCard
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -49,10 +52,10 @@ fun OfflineModeScreen(
         topBar = { DrillDownTopBar(title = "Offline Mode", onBack = onBack) },
     ) { innerPadding ->
         Column(modifier = Modifier.fillMaxSize().padding(innerPadding).padding(16.dp)) {
-            KnCard(modifier = Modifier.fillMaxWidth()) {
+            HeroCard(modifier = Modifier.enterStagger(0)) {
                 Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    val statusColor = if (uiState.isOnline) KrishiTheme.colors.riskLow else KrishiTheme.colors.riskUnknown
-                    val statusBg = if (uiState.isOnline) KrishiTheme.colors.riskLowContainer else KrishiTheme.colors.riskUnknownContainer
+                    val statusColor = if (uiState.isOnline) KrishiTheme.colors.onLime else Color.White
+                    val statusBg = if (uiState.isOnline) KrishiTheme.colors.lime else Color.White.copy(alpha = 0.18f)
                     Box(
                         modifier = Modifier.size(60.dp).background(statusBg, CircleShape),
                         contentAlignment = Alignment.Center,
@@ -67,14 +70,14 @@ fun OfflineModeScreen(
                     Spacer(Modifier.size(12.dp))
                     Text(
                         text = if (uiState.isOnline) "You're Online" else "You're Offline",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.White,
                     )
                     Spacer(Modifier.size(6.dp))
                     Text(
                         text = "Showing your last synced field data below",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = Color.White.copy(alpha = 0.88f),
                         textAlign = TextAlign.Center,
                     )
                 }
@@ -82,7 +85,7 @@ fun OfflineModeScreen(
 
             Spacer(Modifier.size(14.dp))
 
-            KnCard(modifier = Modifier.fillMaxWidth()) {
+            KnCard(modifier = Modifier.fillMaxWidth().enterStagger(1)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Rounded.History, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(17.dp))
                     Spacer(Modifier.size(9.dp))

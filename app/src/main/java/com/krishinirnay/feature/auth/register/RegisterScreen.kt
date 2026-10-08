@@ -1,5 +1,9 @@
 package com.krishinirnay.feature.auth.register
 
+import com.krishinirnay.core.designsystem.theme.KrishiTheme
+import com.krishinirnay.core.designsystem.motion.enterStagger
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -71,26 +75,14 @@ fun RegisterScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Box(
-                modifier = Modifier.size(72.dp),
+                modifier = Modifier
+                    .enterStagger(0)
+                    .size(84.dp)
+                    .clip(RoundedCornerShape(26.dp))
+                    .background(Brush.linearGradient(listOf(KrishiTheme.colors.heroStart, KrishiTheme.colors.heroEnd))),
                 contentAlignment = Alignment.Center,
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(72.dp)
-                        .background(
-                            Brush.radialGradient(
-                                listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f), Color.Transparent),
-                            ),
-                        ),
-                )
-                Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(16.dp)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    SproutMark(modifier = Modifier.size(28.dp), color = MaterialTheme.colorScheme.primary)
-                }
+                SproutMark(modifier = Modifier.size(44.dp), color = KrishiTheme.colors.lime)
             }
             Spacer(Modifier.height(12.dp))
             Text(strings.registerTitle, style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center)
@@ -109,7 +101,7 @@ fun RegisterScreen(
                     onValueChange = viewModel::onFirstNameChange,
                     label = { Text(strings.registerFirstName) },
                     singleLine = true,
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(16.dp),
                     keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = ImeAction.Next),
                     modifier = Modifier.weight(1f),
                 )
@@ -118,7 +110,7 @@ fun RegisterScreen(
                     onValueChange = viewModel::onLastNameChange,
                     label = { Text(strings.registerLastName) },
                     singleLine = true,
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(16.dp),
                     keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = ImeAction.Next),
                     modifier = Modifier.weight(1f),
                 )
@@ -130,7 +122,12 @@ fun RegisterScreen(
                 onValueChange = viewModel::onEmailChange,
                 label = { Text(strings.loginEmail) },
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                ),
                 keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                     keyboardType = KeyboardType.Email,
                     imeAction = ImeAction.Next,
@@ -144,7 +141,12 @@ fun RegisterScreen(
                 onValueChange = viewModel::onMobileChange,
                 label = { Text(strings.registerMobile) },
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                ),
                 keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                     keyboardType = KeyboardType.Phone,
                     imeAction = ImeAction.Next,
@@ -159,7 +161,12 @@ fun RegisterScreen(
                 onValueChange = viewModel::onPasswordChange,
                 label = { Text(strings.loginPassword) },
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                ),
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                     keyboardType = KeyboardType.Password,
@@ -183,7 +190,12 @@ fun RegisterScreen(
                 onValueChange = viewModel::onConfirmPasswordChange,
                 label = { Text(strings.registerConfirmPassword) },
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                ),
                 visualTransformation = if (confirmVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                     keyboardType = KeyboardType.Password,
@@ -214,7 +226,7 @@ fun RegisterScreen(
             Button(
                 onClick = viewModel::register,
                 enabled = !uiState.isLoading,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(50),
                 modifier = Modifier.fillMaxWidth().height(56.dp),
             ) {
                 if (uiState.isLoading) {

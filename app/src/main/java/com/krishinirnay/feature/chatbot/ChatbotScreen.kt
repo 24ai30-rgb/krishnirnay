@@ -1,5 +1,6 @@
 package com.krishinirnay.feature.chatbot
 
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -131,8 +132,9 @@ fun ChatbotScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                items(uiState.messages, key = ChatMessage::id) { message ->
+                items(uiState.messages, key = ChatMessage::id, contentType = { "message" }) { message ->
                     MessageBubble(
+                        modifier = Modifier.animateItem(),
                         message = message,
                         strings = strings,
                         onListen = { viewModel.speak(message.text) },
@@ -171,7 +173,12 @@ fun ChatbotScreen(
                     value = uiState.inputText,
                     onValueChange = viewModel::onInputChange,
                     placeholder = { Text(strings.chatbotPlaceholder) },
-                    shape = RoundedCornerShape(24.dp),
+                    shape = RoundedCornerShape(50),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    ),
                     singleLine = true,
                     enabled = !uiState.isGenerating,
                     modifier = Modifier.weight(1f),
@@ -198,14 +205,14 @@ fun ChatbotScreen(
                         .size(46.dp)
                         .scale(if (uiState.isListening) micScale else 1f)
                         .background(
-                            if (uiState.isListening) KrishiTheme.colors.riskHigh else KrishiTheme.colors.surfaceAlt,
+                            if (uiState.isListening) KrishiTheme.colors.riskHigh else MaterialTheme.colorScheme.surface,
                             RoundedCornerShape(23.dp),
                         ),
                 ) {
                     Icon(
                         Icons.Rounded.Mic,
                         contentDescription = strings.chatbotSpeak,
-                        tint = if (uiState.isListening) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                        tint = if (uiState.isListening) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 IconButton(
@@ -218,9 +225,9 @@ fun ChatbotScreen(
                         ),
                 ) {
                     if (uiState.isGenerating) {
-                        Icon(Icons.Rounded.Stop, contentDescription = strings.chatbotStop, tint = Color.White)
+                        Icon(Icons.Rounded.Stop, contentDescription = strings.chatbotStop, tint = MaterialTheme.colorScheme.onError)
                     } else {
-                        Icon(Icons.Rounded.Send, contentDescription = strings.chatbotSend, tint = Color.White)
+                        Icon(Icons.Rounded.Send, contentDescription = strings.chatbotSend, tint = MaterialTheme.colorScheme.onPrimary)
                     }
                 }
             }
@@ -340,31 +347,32 @@ private val timestampFormat by lazy { SimpleDateFormat("h:mm a", Locale.getDefau
 
 @Composable
 private fun MessageBubble(
+    modifier: Modifier = Modifier,
     message: ChatMessage,
     strings: AppStrings,
     onListen: () -> Unit,
     onRetry: () -> Unit,
 ) {
     val bubbleColor = when {
-        message.isFromUser -> MaterialTheme.colorScheme.primaryContainer
+        message.isFromUser -> MaterialTheme.colorScheme.primary
         message.isError -> MaterialTheme.colorScheme.errorContainer
-        else -> KrishiTheme.colors.surfaceAlt
+        else -> MaterialTheme.colorScheme.surface
     }
     val textColor = when {
-        message.isFromUser -> MaterialTheme.colorScheme.onPrimaryContainer
+        message.isFromUser -> MaterialTheme.colorScheme.onPrimary
         message.isError -> MaterialTheme.colorScheme.onErrorContainer
         else -> MaterialTheme.colorScheme.onSurface
     }
     val alignment = if (message.isFromUser) Alignment.CenterEnd else Alignment.CenterStart
     val shape = if (message.isFromUser) {
-        RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = 16.dp, bottomEnd = 4.dp)
+        RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp, bottomStart = 20.dp, bottomEnd = 6.dp)
     } else {
-        RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = 4.dp, bottomEnd = 16.dp)
+        RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp, bottomStart = 6.dp, bottomEnd = 20.dp)
     }
     val clipboard = LocalClipboardManager.current
     var justCopied by remember(message.id) { mutableStateOf(false) }
 
-    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = alignment) {
+    Box(modifier = modifier.fillMaxWidth(), contentAlignment = alignment) {
         Column(horizontalAlignment = if (message.isFromUser) Alignment.End else Alignment.Start) {
             Box(
                 modifier = Modifier

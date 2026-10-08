@@ -1,5 +1,12 @@
 package com.krishinirnay.feature.onboarding
 
+import com.krishinirnay.core.designsystem.motion.KrishiMotion
+import com.krishinirnay.core.designsystem.components.KnButtonStyle
+import com.krishinirnay.core.designsystem.components.KnButton
+import androidx.compose.foundation.layout.width
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -67,12 +74,21 @@ fun OnboardingScreen(
     Scaffold(modifier = modifier, containerColor = MaterialTheme.colorScheme.background) { innerPadding ->
         Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             if (uiState.step > 0) {
-                LinearProgressIndicator(
-                    progress = uiState.step / (ONBOARDING_STEP_COUNT - 1).toFloat(),
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    trackColor = KrishiTheme.colors.surfaceAlt,
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    for (i in 1 until ONBOARDING_STEP_COUNT) {
+                        val width by animateDpAsState(if (i == uiState.step) 28.dp else 8.dp, KrishiMotion.firm(), label = "dotW")
+                        val dot by animateColorAsState(
+                            if (i <= uiState.step) MaterialTheme.colorScheme.primary else KrishiTheme.colors.surfaceAlt,
+                            tween(KrishiMotion.STANDARD),
+                            label = "dotC",
+                        )
+                        Box(Modifier.height(8.dp).width(width).clip(RoundedCornerShape(50)).background(dot))
+                    }
+                }
                 Text(
                     text = String.format(strings.onboardingStepOfTemplate, uiState.step, ONBOARDING_STEP_COUNT - 1),
                     style = MaterialTheme.typography.labelSmall,
@@ -84,7 +100,7 @@ fun OnboardingScreen(
             AnimatedContent(
                 targetState = uiState.step,
                 modifier = Modifier.weight(1f),
-                transitionSpec = { (fadeIn(tween(200))).togetherWith(fadeOut(tween(150))) },
+                transitionSpec = { (fadeIn(tween(KrishiMotion.STANDARD)) + slideInHorizontally(tween(KrishiMotion.STANDARD)) { it / 8 }).togetherWith(fadeOut(tween(KrishiMotion.QUICK))) },
                 label = "onboardingStep",
             ) { step ->
                 LazyColumn(
@@ -108,15 +124,15 @@ fun OnboardingScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 if (uiState.step > 0) {
-                    OutlinedButton(
+                    KnButton(
+                        text = strings.onboardingBack,
                         onClick = viewModel::back,
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.weight(1f).height(52.dp),
-                    ) {
-                        Text(strings.onboardingBack)
-                    }
+                        style = KnButtonStyle.Secondary,
+                        modifier = Modifier.weight(1f),
+                    )
                 }
-                Button(
+                KnButton(
+                    text = if (uiState.step == ONBOARDING_STEP_COUNT - 1) strings.onboardingSaveProfile else strings.onboardingContinue,
                     onClick = {
                         if (uiState.step == ONBOARDING_STEP_COUNT - 1) {
                             viewModel.save(onDone = onComplete)
@@ -124,15 +140,10 @@ fun OnboardingScreen(
                             viewModel.next()
                         }
                     },
-                    enabled = uiState.isCurrentStepValid() && !uiState.isSaving,
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.weight(1f).height(52.dp),
-                ) {
-                    Text(
-                        text = if (uiState.step == ONBOARDING_STEP_COUNT - 1) strings.onboardingSaveProfile else strings.onboardingContinue,
-                        fontWeight = FontWeight.Bold,
-                    )
-                }
+                    enabled = uiState.isCurrentStepValid(),
+                    loading = uiState.isSaving,
+                    modifier = Modifier.weight(1f),
+                )
             }
         }
     }

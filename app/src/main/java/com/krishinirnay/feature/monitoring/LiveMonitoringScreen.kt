@@ -1,5 +1,8 @@
 package com.krishinirnay.feature.monitoring
 
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.WindowInsets
 import com.krishinirnay.core.designsystem.motion.pulse
 import com.krishinirnay.core.designsystem.motion.enterStagger
 import com.krishinirnay.core.designsystem.components.GaugeFormat
@@ -76,6 +79,7 @@ fun LiveMonitoringScreen(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             KnTopBar(
+                modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars),
                 title = strings.monitoringTitle,
                 isOnline = uiState.isOnline,
                 onSyncChipClick = onNavigateToOfflineMode,

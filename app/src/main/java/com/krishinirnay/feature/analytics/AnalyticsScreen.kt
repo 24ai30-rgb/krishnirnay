@@ -1,5 +1,8 @@
 package com.krishinirnay.feature.analytics
 
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.WindowInsets
 import com.krishinirnay.core.designsystem.motion.pressClickable
 import com.krishinirnay.core.designsystem.motion.enterStagger
 import com.krishinirnay.core.designsystem.motion.KrishiMotion
@@ -62,6 +65,7 @@ fun AnalyticsScreen(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             KnTopBar(
+                modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars),
                 title = "Analytics",
                 isOnline = uiState.isOnline,
                 onSyncChipClick = onNavigateToOfflineMode,

@@ -1,5 +1,12 @@
 package com.krishinirnay.feature.auth.welcome
 
+import com.krishinirnay.core.designsystem.theme.KrishiTheme
+import com.krishinirnay.core.designsystem.motion.pulse
+import com.krishinirnay.core.designsystem.motion.enterStagger
+import com.krishinirnay.core.designsystem.components.KnButtonStyle
+import com.krishinirnay.core.designsystem.components.KnButton
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,59 +50,64 @@ fun WelcomeScreen(
     modifier: Modifier = Modifier,
 ) {
     val strings = LocalAppStrings.current
-    Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        Column(
+    val c = KrishiTheme.colors
+    Column(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        // Brand hero: full-bleed gradient with the sprout mark and name.
+        Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 28.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
+                .fillMaxWidth()
+                .weight(1f)
+                .clip(RoundedCornerShape(bottomStart = 36.dp, bottomEnd = 36.dp))
+                .background(Brush.linearGradient(listOf(c.heroStart, c.heroEnd))),
+            contentAlignment = Alignment.Center,
         ) {
-            Box(modifier = Modifier.size(120.dp), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 28.dp)) {
                 Box(
                     modifier = Modifier
-                        .size(120.dp)
-                        .background(
-                            Brush.radialGradient(
-                                listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f), Color.Transparent),
-                            ),
-                        ),
-                )
-                Box(
-                    modifier = Modifier
-                        .size(84.dp)
-                        .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(24.dp)),
+                        .enterStagger(0)
+                        .pulse(true)
+                        .size(104.dp)
+                        .clip(RoundedCornerShape(32.dp))
+                        .background(Color.White.copy(alpha = 0.16f)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    SproutMark(modifier = Modifier.size(42.dp), color = MaterialTheme.colorScheme.primary)
+                    SproutMark(modifier = Modifier.size(54.dp), color = c.lime)
                 }
+                Spacer(Modifier.height(22.dp))
+                Text(
+                    "KrishiNirnay",
+                    style = MaterialTheme.typography.displayMedium,
+                    color = Color.White,
+                    modifier = Modifier.enterStagger(1),
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = strings.loginTagline,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.White.copy(alpha = 0.88f),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.enterStagger(2),
+                )
             }
-            Spacer(Modifier.height(20.dp))
-            Text("KrishiNirnay", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.height(8.dp))
-            Text(
-                text = strings.loginTagline,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-            )
-            Spacer(Modifier.height(56.dp))
-
-            Button(
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = 24.dp, vertical = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            KnButton(
+                text = strings.loginCreateAccount,
                 onClick = onCreateAccount,
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-            ) {
-                Text(strings.loginCreateAccount, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
-            }
-            Spacer(Modifier.height(12.dp))
-            OutlinedButton(
+                modifier = Modifier.fillMaxWidth().enterStagger(3),
+            )
+            KnButton(
+                text = strings.loginSubmit,
                 onClick = onLogIn,
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-            ) {
-                Text(strings.loginSubmit, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
-            }
+                style = KnButtonStyle.Secondary,
+                modifier = Modifier.fillMaxWidth().enterStagger(4),
+            )
         }
     }
 }

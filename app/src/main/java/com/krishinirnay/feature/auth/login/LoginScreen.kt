@@ -1,5 +1,8 @@
 package com.krishinirnay.feature.auth.login
 
+import com.krishinirnay.core.designsystem.motion.enterStagger
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -91,26 +94,14 @@ private fun LoginContent(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Box(
-                modifier = Modifier.size(100.dp),
+                modifier = Modifier
+                    .enterStagger(0)
+                    .size(84.dp)
+                    .clip(RoundedCornerShape(26.dp))
+                    .background(Brush.linearGradient(listOf(KrishiTheme.colors.heroStart, KrishiTheme.colors.heroEnd))),
                 contentAlignment = Alignment.Center,
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(100.dp)
-                        .background(
-                            Brush.radialGradient(
-                                listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f), Color.Transparent),
-                            ),
-                        ),
-                )
-                Box(
-                    modifier = Modifier
-                        .size(72.dp)
-                        .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(20.dp)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    SproutMark(modifier = Modifier.size(36.dp), color = MaterialTheme.colorScheme.primary)
-                }
+                SproutMark(modifier = Modifier.size(44.dp), color = KrishiTheme.colors.lime)
             }
             Spacer(Modifier.height(16.dp))
             Text("KrishiNirnay", style = MaterialTheme.typography.headlineMedium)
@@ -128,7 +119,12 @@ private fun LoginContent(
                 onValueChange = onEmailChange,
                 label = { Text(strings.loginEmail) },
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                ),
                 keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                     keyboardType = KeyboardType.Email,
                     imeAction = ImeAction.Next,
@@ -143,7 +139,12 @@ private fun LoginContent(
                 onValueChange = onPasswordChange,
                 label = { Text(strings.loginPassword) },
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                ),
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                     keyboardType = KeyboardType.Password,
@@ -186,7 +187,7 @@ private fun LoginContent(
             Button(
                 onClick = onLoginClick,
                 enabled = !uiState.isLoading,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(50),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
