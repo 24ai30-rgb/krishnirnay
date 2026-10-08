@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 import socket
 import threading
@@ -9,7 +10,7 @@ from pydantic import BaseModel
 
 from app.config import get_settings
 from app.routers import chat, disease, health, ivr, local_llm, market, pest, risk_fusion, weather
-from app.services import gemini_proxy
+from app.services import gemini_proxy, local_llm_service
 
 
 # =========================================================
@@ -307,6 +308,14 @@ async def lifespan(app: FastAPI):
     # =====================================================
 
     start_discovery_server()
+
+    # =====================================================
+    # PRELOAD THE LOCAL LLM (background — never blocks startup)
+    # =====================================================
+    # Without this the first question after startup (or after Ollama's idle
+    # unload) waits ~80s for the model to load. warm_up() never raises.
+
+    warm_up_task = asyncio.create_task(local_llm_service.warm_up())
 
 
     # =====================================================

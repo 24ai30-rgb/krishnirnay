@@ -168,7 +168,11 @@ def test_status_reports_hindi_and_marathi_model_availability_separately_from_eng
     assert body["model_availability"] == {"en": True, "hi": False, "mr": False}
 
 
-def test_chat_routes_hindi_to_the_hindi_configured_model_not_the_english_one():
+def test_chat_routes_hindi_to_the_hindi_configured_model_not_the_english_one(monkeypatch):
+    # Pin distinct models so the test doesn't depend on the developer's .env
+    # (a single-model setup legitimately uses the same model for every language).
+    monkeypatch.setattr(get_settings(), "local_llm_model", "english-model:1b")
+    monkeypatch.setattr(get_settings(), "local_llm_model_hi", "hindi-model:3b")
     mock_generate = AsyncMock(return_value={"reply": "फफूंदनाशक का छिड़काव करें।", "elapsed_ms": 9000})
     with patch("app.routers.local_llm.generate", new=mock_generate):
         response = client.post(

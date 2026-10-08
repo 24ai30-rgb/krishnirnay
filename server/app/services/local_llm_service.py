@@ -260,6 +260,7 @@ async def _stream_raw(prompt: str, model: str | None, system: str | None):
         "messages": _chat_messages(prompt, system),
         "stream": True,
         "think": False,
+        "keep_alive": settings.local_llm_keep_alive,
         "options": {
             "num_predict": settings.local_llm_num_predict,
             "temperature": settings.local_llm_temperature,
@@ -328,6 +329,7 @@ async def generate(
         "stream": False,
         # Reasoning models: don't route tokens into a separate thinking phase.
         "think": False,
+        "keep_alive": settings.local_llm_keep_alive,
         "options": {
             # Bounds worst-case latency. A farmer-facing explanation is a few
             # sentences; without a cap a reasoning model will happily spend
@@ -384,7 +386,12 @@ async def _installed_models(base_url: str, timeout: httpx.Timeout) -> list[str] 
 def _model_installed(wanted: str, installed: list[str]) -> bool:
     # Ollama reports "name:tag"; treat a bare configured name as matching its
     # default tag so "deepseek-r1" still matches "deepseek-r1:7b".
-    return any(name == wanted or name.split(":")[0] == wanted.split(":")[0] for name in installed)
+    # A *tagged* name must match exactly: "qwen2.5:3b" is a different download
+    # from "qwen2.5:7b", and reporting it as installed makes the app claim the
+    # AI is ready and then fail on the first question.
+    if ":" in wanted:
+        return wanted in installed
+    return any(name == wanted or name.split(":")[0] == wanted for name in installed)
 
 
 async def check_status(deep: bool = False) -> dict:
@@ -444,3 +451,30 @@ async def check_status(deep: bool = False) -> dict:
         return {"status": STATUS_GENERATION_WORKING, "ollama_running": True, "model_availability": availability}
     except LocalLlmError:
         return {"status": STATUS_GENERATION_FAILED, "ollama_running": True, "model_availability": availability}
+
+
+async def warm_up() -> bool:
+    """Load the default model into memory with a 1-token request, so the first
+    real question doesn't pay the cold-start cost. Called once at server startup.
+
+    Never raises: Ollama being down must not stop the server from starting (the
+    rest of the app works without it). Returns whether the model was loaded.
+    """
+    settings = get_settings()
+    if settings.local_llm_provider != "ollama" or not settings.local_llm_url or not settings.local_llm_model:
+        return False
+    payload = {
+        "model": settings.local_llm_model,
+        "messages": [{"role": "user", "content": "hi"}],
+        "stream": False,
+        "think": False,
+        "keep_alive": settings.local_llm_keep_alive,
+        "options": {"num_predict": 1},
+    }
+    try:
+        async with httpx.AsyncClient(timeout=_timeout(settings)) as client:
+            response = await client.post(_chat_endpoint(settings.local_llm_url), json=payload)
+            response.raise_for_status()
+        return True
+    except Exception:  # noqa: BLE001 — warm-up is best-effort by design
+        return False

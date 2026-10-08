@@ -97,6 +97,10 @@ class Settings(BaseSettings):
     local_llm_read_timeout_seconds: float = 120.0
     # Caps worst-case latency: a farmer-facing explanation is a few sentences.
     local_llm_num_predict: int = 220
+    # How long Ollama keeps the model loaded after a request. Its own default is
+    # 5 minutes; reloading a 7B model onto a small GPU took ~80s, so a farmer who
+    # asks one question, waits, then asks again would hit that cold start every time.
+    local_llm_keep_alive: str = "30m"
     # Low: this layer explains already-computed facts, it doesn't invent any.
     local_llm_temperature: float = 0.2
 

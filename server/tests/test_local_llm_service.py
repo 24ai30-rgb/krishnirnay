@@ -614,3 +614,49 @@ def test_check_status_deep_is_never_attempted_when_the_model_is_missing(mock_cto
 
     assert result["status"] == STATUS_MODEL_MISSING
     client.post.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# keep_alive + warm_up: the first request after Ollama unloads the model costs
+# ~80s on a 4GB GPU; the server keeps it loaded and preloads it at startup.
+# ---------------------------------------------------------------------------
+
+def test_generate_asks_ollama_to_keep_model_loaded():
+    from app.services.local_llm_service import generate as _generate
+
+    client = _mock_client(_response(200, _chat_body("Irrigate today.")))
+    with patch("app.services.local_llm_service.httpx.AsyncClient", return_value=client):
+        _run(_generate("Should I irrigate?", model="qwen2.5:7b"))
+
+    sent = client.post.call_args.kwargs["json"]
+    assert sent["keep_alive"] == get_settings().local_llm_keep_alive
+
+
+def test_warm_up_sends_a_one_token_request_with_keep_alive():
+    from app.services.local_llm_service import warm_up
+
+    client = _mock_client(_response(200, _chat_body("ok")))
+    with patch("app.services.local_llm_service.httpx.AsyncClient", return_value=client):
+        assert _run(warm_up()) is True
+
+    sent = client.post.call_args.kwargs["json"]
+    assert sent["options"]["num_predict"] == 1
+    assert sent["keep_alive"] == get_settings().local_llm_keep_alive
+
+
+def test_warm_up_never_raises_when_ollama_is_down():
+    from app.services.local_llm_service import warm_up
+
+    client = _mock_client(side_effect=httpx.ConnectError("refused"))
+    with patch("app.services.local_llm_service.httpx.AsyncClient", return_value=client):
+        assert _run(warm_up()) is False
+
+
+def test_a_tagged_model_name_is_not_satisfied_by_a_different_size_of_the_same_family():
+    from app.services.local_llm_service import _model_installed
+
+    assert _model_installed("qwen2.5:3b", ["qwen2.5:7b"]) is False
+    assert _model_installed("qwen2.5:7b", ["qwen2.5:7b"]) is True
+    # a bare name still matches whatever tag is installed
+    assert _model_installed("deepseek-r1", ["deepseek-r1:7b"]) is True
+    assert _model_installed("deepseek-r1", ["qwen2.5:7b"]) is False
