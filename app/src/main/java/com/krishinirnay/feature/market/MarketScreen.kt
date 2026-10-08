@@ -1,5 +1,17 @@
 package com.krishinirnay.feature.market
 
+import androidx.compose.foundation.layout.Column
+import com.krishinirnay.core.designsystem.motion.enterStagger
+import com.krishinirnay.core.designsystem.components.SectionHeader
+import com.krishinirnay.core.designsystem.components.AnimatedNumber
+import com.krishinirnay.core.designsystem.components.HeroCard
+import com.krishinirnay.core.designsystem.components.LoadingState
+import kotlin.math.roundToInt
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -81,7 +93,7 @@ fun MarketScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp),
                 ) {
-                    item { Text(strings.marketLoading, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                    item { LoadingState(message = strings.marketLoading) }
                 }
 
                 market.status == DataSourceStatus.NO_DATA -> LazyColumn(
@@ -123,75 +135,98 @@ private fun MarketContent(
     onChangeCropOrLocation: () -> Unit,
     onRefresh: () -> Unit,
 ) {
+    val c = KrishiTheme.colors
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 32.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        item {
-            KnCard(modifier = Modifier.fillMaxWidth()) {
+        item(key = "hero") {
+            HeroCard(modifier = Modifier.enterStagger(0)) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                    Text(strings.marketBestAvailable, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+                    Text(
+                        strings.marketBestAvailable.uppercase(),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = Color.White.copy(alpha = 0.85f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
+                    )
                     StatusBadge(status = market.status)
                 }
                 Spacer(Modifier.size(6.dp))
-                Text(market.crop, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "₹${market.currentPricePerQuintal?.toInt()}",
-                        style = MaterialTheme.typography.displaySmall,
-                        color = MaterialTheme.colorScheme.primary,
+                Text(market.crop, style = MaterialTheme.typography.headlineSmall, color = Color.White)
+                Row(verticalAlignment = Alignment.Bottom) {
+                    AnimatedNumber(
+                        target = market.currentPricePerQuintal ?: 0f,
+                        format = { "₹${it.roundToInt()}" },
+                        style = MaterialTheme.typography.displayMedium,
+                        color = c.lime,
                     )
                     Spacer(Modifier.size(6.dp))
-                    Text(strings.marketPerQuintal, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    trendIconFor(market.trend)?.let { icon ->
-                        Spacer(Modifier.size(8.dp))
-                        Icon(icon, contentDescription = marketTrendLabel(market.trend, strings), tint = trendColorFor(market.trend), modifier = Modifier.size(22.dp))
+                    Text(
+                        strings.marketPerQuintal,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.85f),
+                        modifier = Modifier.padding(bottom = 8.dp),
+                    )
+                }
+                trendIconFor(market.trend)?.let { icon ->
+                    Spacer(Modifier.size(6.dp))
+                    Row(
+                        modifier = Modifier.clip(RoundedCornerShape(50)).background(c.lime).padding(horizontal = 10.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(icon, contentDescription = null, tint = c.onLime, modifier = Modifier.size(16.dp))
+                        marketTrendLabel(market.trend, strings)?.let {
+                            Spacer(Modifier.size(6.dp))
+                            Text(it, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = c.onLime, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
                     }
                 }
-                marketTrendLabel(market.trend, strings)?.let {
-                    Text(it, style = MaterialTheme.typography.labelSmall, color = trendColorFor(market.trend))
-                }
-                Spacer(Modifier.size(10.dp))
-                market.market?.let { Text(it, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface) }
-                market.location?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                Spacer(Modifier.size(12.dp))
+                market.market?.let { Text(it, style = MaterialTheme.typography.titleSmall, color = Color.White) }
+                market.location?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.85f)) }
                 listOfNotNull(market.variety, market.grade).takeIf { it.isNotEmpty() }?.let {
-                    Text(it.joinToString(" · "), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(it.joinToString(" · "), style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.8f))
                 }
-                Spacer(Modifier.size(10.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    market.minPricePerQuintal?.let { Text("${strings.marketMinLabel} ₹${it.toInt()}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
-                    market.maxPricePerQuintal?.let { Text("${strings.marketMaxLabel} ₹${it.toInt()}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
-                    market.averagePricePerQuintal?.let { Text("${strings.marketAvgLabel} ₹${it.toInt()}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+            }
+        }
+
+        item(key = "range") {
+            KnCard(modifier = Modifier.fillMaxWidth().enterStagger(1)) {
+                Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                    market.minPricePerQuintal?.let { PriceStat(strings.marketMinLabel, it, Modifier.weight(1f)) }
+                    market.averagePricePerQuintal?.let { PriceStat(strings.marketAvgLabel, it, Modifier.weight(1f)) }
+                    market.maxPricePerQuintal?.let { PriceStat(strings.marketMaxLabel, it, Modifier.weight(1f)) }
                 }
                 market.arrivalDate?.let {
-                    Spacer(Modifier.size(4.dp))
-                    Text("${strings.marketDateLabel}: $it", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.size(10.dp))
+                    Text("${strings.marketDateLabel}: $it", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 market.fetchedAt?.let {
-                    Text(String.format(strings.marketLastUpdatedTemplate, it.toRelativeLabel(strings)), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(String.format(strings.marketLastUpdatedTemplate, it.toRelativeLabel(strings)), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Spacer(Modifier.size(8.dp))
                 when (market.matchLevel(farmerDistrict)) {
-                    MarketMatchLevel.SAME_DISTRICT -> Text(strings.marketSameDistrict, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
-                    MarketMatchLevel.SAME_STATE -> Text(strings.marketSameState, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    MarketMatchLevel.SAME_DISTRICT -> Text(strings.marketSameDistrict, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 6.dp))
+                    MarketMatchLevel.SAME_STATE -> Text(strings.marketSameState, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 6.dp))
                     MarketMatchLevel.UNKNOWN -> Unit
                 }
             }
         }
 
-        item {
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+        item(key = "actions") {
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth().enterStagger(2)) {
                 KnButton(strings.actionRetry, onRefresh, style = KnButtonStyle.Secondary, modifier = Modifier.weight(1f))
                 KnButton(strings.marketChangeCropOrLocation, onChangeCropOrLocation, style = KnButtonStyle.Secondary, modifier = Modifier.weight(1f))
             }
         }
 
         if (market.markets.isNotEmpty()) {
-            item {
-                Text(strings.marketOtherMandis, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            item(key = "others") {
+                SectionHeader(strings.marketOtherMandis)
             }
-            items(market.markets, key = { "${it.market}-${it.district}-${it.arrivalDate}" }) { mandi ->
+            items(market.markets, key = { "${it.market}-${it.district}-${it.arrivalDate}" }, contentType = { "mandi" }) { mandi ->
                 MandiRow(mandi, farmerDistrict, strings)
             }
         }
@@ -199,14 +234,21 @@ private fun MarketContent(
 }
 
 @Composable
+private fun PriceStat(label: String, price: Float, modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
+        Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text("₹${price.roundToInt()}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+    }
+}
+
+@Composable
 private fun MandiRow(mandi: MandiPrice, farmerDistrict: String, strings: AppStrings) {
     KnCard(modifier = Modifier.fillMaxWidth()) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text(mandi.market, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+            Text(mandi.market, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(
                 text = mandi.modalPricePerQuintal?.let { "₹${it.toInt()}" } ?: "-",
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.primary,
             )
         }
@@ -235,15 +277,6 @@ private fun trendIconFor(trend: MarketTrend): ImageVector? = when (trend) {
     MarketTrend.FALLING -> Icons.Rounded.TrendingDown
     MarketTrend.STABLE -> Icons.Rounded.TrendingFlat
     MarketTrend.UNKNOWN -> null
-}
-
-// Matches RiskLow/RiskHigh/onSurfaceVariant from Color.kt — a plain function
-// (not @Composable) so it can be called from marketTrendLabel's sibling
-// without threading MaterialTheme through, same tokens either way.
-private fun trendColorFor(trend: MarketTrend): androidx.compose.ui.graphics.Color = when (trend) {
-    MarketTrend.RISING -> androidx.compose.ui.graphics.Color(0xFF2E9E5B)
-    MarketTrend.FALLING -> androidx.compose.ui.graphics.Color(0xFFD64545)
-    MarketTrend.STABLE, MarketTrend.UNKNOWN -> androidx.compose.ui.graphics.Color(0xFF5B665F)
 }
 
 /** Null for UNKNOWN — a trend the provider couldn't determine is left unshown, never guessed. */

@@ -1,5 +1,15 @@
 package com.krishinirnay.feature.weather
 
+import com.krishinirnay.core.designsystem.motion.pulse
+import com.krishinirnay.core.designsystem.motion.pressClickable
+import com.krishinirnay.core.designsystem.motion.enterStagger
+import com.krishinirnay.core.designsystem.motion.KrishiMotion
+import com.krishinirnay.core.designsystem.components.AnimatedNumber
+import com.krishinirnay.core.designsystem.components.HeroCard
+import kotlin.math.roundToInt
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -105,13 +115,13 @@ fun WeatherScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
-                item {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(weather.locationLabel, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+                item(key = "loc") {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.enterStagger(0)) {
+                        Text(weather.locationLabel, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
                         StatusBadge(status = weather.status)
                     }
                 }
-                item { CurrentWeatherCard(weather, strings) }
+                item(key = "current") { CurrentWeatherCard(weather, strings) }
 
                 // Real, rule-based farming interpretation — never generated
                 // when the underlying reading isn't real (see agricultureInsights).
@@ -120,7 +130,7 @@ fun WeatherScreen(
                     item { FarmingTipsCard(insights, strings) }
                 }
 
-                item {
+                item(key = "tabs") {
                     WeatherTabs(
                         selected = selectedTab,
                         labels = listOf(strings.weatherToday, strings.weatherThreeDay, strings.weatherSevenDay),
@@ -133,10 +143,10 @@ fun WeatherScreen(
                     else -> weather.daily
                 }
                 items(daysToShow.size, key = { "${daysToShow[it].dayLabel}-$it" }, contentType = { "day" }) { index ->
-                    DayForecastRow(daysToShow[index])
+                    DayForecastRow(daysToShow[index], index + 3)
                 }
-                item {
-                    KnCard {
+                item(key = "rain") {
+                    KnCard(modifier = Modifier.enterStagger(8)) {
                         Text(
                             text = String.format(strings.weatherRainInTemplate, weather.rainInHoursLabel),
                             style = MaterialTheme.typography.bodyMedium,
@@ -154,27 +164,25 @@ private fun WeatherTabs(selected: Int, labels: List<String>, onSelect: (Int) -> 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(KrishiTheme.colors.surfaceAlt)
+            .clip(RoundedCornerShape(50))
+            .background(MaterialTheme.colorScheme.surface)
             .padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         labels.forEachIndexed { index, label ->
             val isSelected = index == selected
+            val bg by animateColorAsState(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent, tween(KrishiMotion.STANDARD), label = "wTabBg")
+            val fg by animateColorAsState(if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant, tween(KrishiMotion.STANDARD), label = "wTabFg")
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
-                    .clickable { onSelect(index) }
+                    .clip(RoundedCornerShape(50))
+                    .background(bg)
+                    .pressClickable { onSelect(index) }
                     .padding(vertical = 10.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Text(text = label, style = MaterialTheme.typography.labelLarge, color = fg, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
     }
@@ -182,43 +190,37 @@ private fun WeatherTabs(selected: Int, labels: List<String>, onSelect: (Int) -> 
 
 @Composable
 private fun CurrentWeatherCard(weather: WeatherState, strings: AppStrings) {
-    KnCard {
+    val c = KrishiTheme.colors
+    HeroCard(modifier = Modifier.enterStagger(1)) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            // A gentle, purposeful breathing animation on the hero icon only —
-            // never on data-bearing text, and never something that could read
-            // as a loading spinner. Runs only once real data is already on
-            // screen, so it can never delay anything.
-            val infiniteTransition = rememberInfiniteTransition(label = "weatherIconBreathe")
-            val iconScale by infiniteTransition.animateFloat(
-                initialValue = 1f,
-                targetValue = 1.08f,
-                animationSpec = infiniteRepeatable(tween(1800), RepeatMode.Reverse),
-                label = "weatherIconScale",
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                AnimatedNumber(
+                    target = weather.currentTempC.toFloat(),
+                    format = { "${it.roundToInt()}°C" },
+                    style = MaterialTheme.typography.displayMedium,
+                    color = Color.White,
+                )
+                weather.feelsLikeC?.let {
+                    Text("${strings.weatherFeelsLike} ${it}°C", style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.85f))
+                }
+            }
+            // Gentle breathing on the icon only — never on data text, and it plays
+            // only once real data is already on screen. Skipped when motion is off.
             Icon(
                 imageVector = iconFor(weather.condition),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(48.dp).scale(iconScale),
+                tint = c.lime,
+                modifier = Modifier.size(64.dp).pulse(true),
             )
-            Spacer(Modifier.size(16.dp))
-            Column {
-                Text("${weather.currentTempC}°C", style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.onSurface)
-                weather.feelsLikeC?.let {
-                    Text("${strings.weatherFeelsLike} ${it}°C", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            }
         }
         Spacer(Modifier.size(16.dp))
         // Row 1: the three readings every forecast provider always supplies.
         // Wind direction (when present) moves to the label line, never
-        // appended to the value — "23 km/h NE" doesn't fit a 3-across
-        // column on a narrow/scaled display, and clipping mid-word ("23
-        // km/") is worse than just not showing the compass direction here.
+        // appended to the value — "23 km/h NE" doesn't fit a 3-across column.
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            WeatherStat(Icons.Rounded.Air, weather.windDirection?.let { "${strings.weatherWind} · $it" } ?: strings.weatherWind, "${weather.windKph} km/h", Color(0xFF2F80ED), Color(0xFFE4EFFD), Modifier.weight(1f))
-            WeatherStat(Icons.Rounded.Opacity, strings.humidity, "${weather.humidityPct}%", Color(0xFF12A594), Color(0xFFDFF5F1), Modifier.weight(1f))
-            WeatherStat(Icons.Rounded.Grain, strings.weatherRainChance, "${weather.rainChancePct}%", Color(0xFF8E5FD1), Color(0xFFEEE6FA), Modifier.weight(1f))
+            WeatherStat(Icons.Rounded.Air, weather.windDirection?.let { "${strings.weatherWind} · $it" } ?: strings.weatherWind, "${weather.windKph} km/h", Modifier.weight(1f))
+            WeatherStat(Icons.Rounded.Opacity, strings.humidity, "${weather.humidityPct}%", Modifier.weight(1f))
+            WeatherStat(Icons.Rounded.Grain, strings.weatherRainChance, "${weather.rainChancePct}%", Modifier.weight(1f))
         }
         // Row 2: only the fields the provider actually returned — visibility,
         // UV, and pressure are all nullable and never shown as a fake 0.
@@ -231,32 +233,27 @@ private fun CurrentWeatherCard(weather: WeatherState, strings: AppStrings) {
             Spacer(Modifier.size(10.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 extraStats.forEach { (icon, label, value) ->
-                    WeatherStat(icon, label, value, MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer, Modifier.weight(1f))
+                    WeatherStat(icon, label, value, Modifier.weight(1f))
                 }
             }
         }
     }
 }
 
-// Vertically stacked (icon above value above label, all centered) rather
-// than a horizontal icon+value row — a 3-across grid on a narrow/scaled
-// display has no room for "23 km/h" beside a 22dp icon on one line (this
-// was measured clipping mid-word, e.g. "23 km/"), but has plenty of width
-// for centered text that can wrap onto 2 lines if needed. Matches
-// DashboardScreen's SensorValueCard, which already proved this pattern
-// works at this device's display scale.
+// Vertically stacked (icon above value above label, all centered) — a 3-across
+// grid on a narrow/scaled display has no room for "23 km/h" beside an icon on
+// one line (measured clipping mid-word), but has plenty of width for centered
+// text that can wrap onto 2 lines if needed.
 @Composable
-private fun WeatherStat(icon: ImageVector, label: String, value: String, accentColor: Color, accentBg: Color, modifier: Modifier = Modifier) {
-    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(
-            modifier = Modifier.size(26.dp).clip(RoundedCornerShape(8.dp)).background(accentBg),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(icon, contentDescription = null, tint = accentColor, modifier = Modifier.size(15.dp))
-        }
+private fun WeatherStat(icon: ImageVector, label: String, value: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.clip(RoundedCornerShape(16.dp)).background(Color.White.copy(alpha = 0.14f)).padding(vertical = 10.dp, horizontal = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Icon(icon, contentDescription = null, tint = KrishiTheme.colors.lime, modifier = Modifier.size(20.dp))
         Spacer(Modifier.size(6.dp))
-        Text(value, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, textAlign = TextAlign.Center)
-        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, textAlign = TextAlign.Center)
+        Text(value, style = MaterialTheme.typography.titleSmall, color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
+        Text(label, style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.85f), maxLines = 2, textAlign = TextAlign.Center)
     }
 }
 
@@ -283,11 +280,14 @@ private fun agricultureInsights(weather: WeatherState, strings: AppStrings): Lis
 
 @Composable
 private fun FarmingTipsCard(insights: List<String>, strings: AppStrings) {
-    KnCard(modifier = Modifier.fillMaxWidth()) {
+    KnCard(modifier = Modifier.fillMaxWidth().enterStagger(2)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Rounded.WaterDrop, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.size(8.dp))
-            Text(strings.weatherFarmingTips, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+            Box(
+                modifier = Modifier.size(32.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center,
+            ) { Icon(Icons.Rounded.WaterDrop, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp)) }
+            Spacer(Modifier.size(10.dp))
+            Text(strings.weatherFarmingTips, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
         }
         Spacer(Modifier.size(8.dp))
         insights.forEach { tip ->
@@ -297,16 +297,16 @@ private fun FarmingTipsCard(insights: List<String>, strings: AppStrings) {
 }
 
 @Composable
-private fun DayForecastRow(day: com.krishinirnay.core.data.model.DayForecast) {
-    KnCard(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)) {
+private fun DayForecastRow(day: com.krishinirnay.core.data.model.DayForecast, index: Int) {
+    KnCard(modifier = Modifier.enterStagger(index), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            Text(day.dayLabel, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+            Text(day.dayLabel, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
             Icon(iconFor(day.condition), contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
             Spacer(Modifier.size(12.dp))
             Text(
                 text = "${day.highC}°/${day.lowC}°",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.End,
             )
         }
