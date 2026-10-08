@@ -1,5 +1,10 @@
 package com.krishinirnay.feature.advisory
 
+import com.krishinirnay.core.designsystem.theme.KrishiTheme
+import com.krishinirnay.core.designsystem.motion.enterStagger
+import com.krishinirnay.core.designsystem.components.HeroCard
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -74,32 +79,34 @@ fun CropAdvisoryScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            item {
-                KnCard {
+            item(key = "hero") {
+                HeroCard(modifier = Modifier.enterStagger(0)) {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                        RiskBadge(level = uiState.overallRisk, size = RiskBadgeSize.Compact)
-                        Spacer(Modifier.weight(1f))
                         Text(
-                            text = "${uiState.confidencePct}%",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            text = strings.advisoryAiAdvice.uppercase(),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = Color.White.copy(alpha = 0.85f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f),
                         )
+                        Text("${uiState.confidencePct}%", style = MaterialTheme.typography.labelLarge, color = KrishiTheme.colors.lime)
                     }
-                    Spacer(Modifier.size(10.dp))
-                    Text(strings.advisoryAiAdvice, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(Modifier.size(6.dp))
+                    Spacer(Modifier.size(8.dp))
                     Text(
                         text = uiState.aiAdvice?.let(strings::textFor) ?: strings.dashboardGatheringReading,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.White,
                     )
+                    Spacer(Modifier.size(12.dp))
+                    RiskBadge(level = uiState.overallRisk, size = RiskBadgeSize.Compact)
                 }
             }
-            item {
-                KnCard {
+            item(key = "tasks") {
+                KnCard(modifier = Modifier.enterStagger(1)) {
                     Text(
                         text = strings.advisoryRecommendedTasks,
-                        style = MaterialTheme.typography.labelSmall,
+                        style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Spacer(Modifier.size(6.dp))
@@ -128,10 +135,14 @@ private fun taskTitle(type: AdvisoryTaskType): String {
 
 private data class TaskIconStyle(val icon: ImageVector, val color: Color, val background: Color)
 
-private fun iconStyleFor(type: AdvisoryTaskType): TaskIconStyle = when (type) {
-    AdvisoryTaskType.IRRIGATE -> TaskIconStyle(Icons.Rounded.WaterDrop, Color(0xFF2F80ED), Color(0xFFE4EFFD))
-    AdvisoryTaskType.PEST_CONTROL -> TaskIconStyle(Icons.Rounded.BugReport, Color(0xFFD64545), Color(0xFFFBE3E3))
-    AdvisoryTaskType.FERTILIZER -> TaskIconStyle(Icons.Rounded.Grass, Color(0xFF1E7D44), Color(0xFFE3F5E9))
+@Composable
+private fun iconStyleFor(type: AdvisoryTaskType): TaskIconStyle {
+    val c = KrishiTheme.colors
+    return when (type) {
+        AdvisoryTaskType.IRRIGATE -> TaskIconStyle(Icons.Rounded.WaterDrop, c.info, c.infoContainer)
+        AdvisoryTaskType.PEST_CONTROL -> TaskIconStyle(Icons.Rounded.BugReport, c.riskHigh, c.riskHighContainer)
+        AdvisoryTaskType.FERTILIZER -> TaskIconStyle(Icons.Rounded.Grass, MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)
+    }
 }
 
 @Composable
@@ -147,7 +158,7 @@ private fun TaskRow(type: AdvisoryTaskType, title: String, detail: String) {
             modifier = Modifier
                 .padding(top = 10.dp)
                 .size(32.dp)
-                .clip(RoundedCornerShape(10.dp))
+                .clip(CircleShape)
                 .background(style.background),
             contentAlignment = Alignment.Center,
         ) {

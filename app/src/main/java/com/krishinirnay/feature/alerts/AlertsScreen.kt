@@ -1,5 +1,14 @@
 package com.krishinirnay.feature.alerts
 
+import com.krishinirnay.core.designsystem.motion.enterStagger
+import com.krishinirnay.core.designsystem.components.RiskBadgeSize
+import com.krishinirnay.core.designsystem.components.RiskBadge
+import com.krishinirnay.core.designsystem.components.AnimatedNumber
+import com.krishinirnay.core.designsystem.components.HeroCard
+import kotlin.math.roundToInt
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -64,8 +73,31 @@ fun AlertsScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                items(alerts, key = Alert::id) { alert ->
-                    AlertRow(alert)
+                item(key = "hero") {
+                    val highCount = alerts.count { it.riskLevel == RiskLevel.HIGH }
+                    HeroCard(modifier = Modifier.enterStagger(0)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            AnimatedNumber(
+                                target = (if (highCount > 0) highCount else alerts.size).toFloat(),
+                                format = { it.roundToInt().toString() },
+                                style = MaterialTheme.typography.displayMedium,
+                                color = KrishiTheme.colors.lime,
+                            )
+                            Spacer(Modifier.size(12.dp))
+                            Text(
+                                text = strings.alertsTitle,
+                                style = MaterialTheme.typography.titleLarge,
+                                color = Color.White,
+                                modifier = Modifier.weight(1f),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            if (highCount > 0) RiskBadge(level = RiskLevel.HIGH, size = RiskBadgeSize.Compact)
+                        }
+                    }
+                }
+                itemsIndexed(alerts, key = { _, a -> a.id }, contentType = { _, _ -> "alert" }) { index, alert ->
+                    AlertRow(alert, Modifier.enterStagger(index + 1))
                 }
             }
         }
@@ -73,15 +105,15 @@ fun AlertsScreen(
 }
 
 @Composable
-private fun AlertRow(alert: Alert) {
+private fun AlertRow(alert: Alert, modifier: Modifier = Modifier) {
     val strings = LocalAppStrings.current
-    KnCard(modifier = Modifier.fillMaxWidth()) {
+    KnCard(modifier = modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.Top) {
             val (bg, tint) = riskColors(alert.riskLevel)
             Box(
                 modifier = Modifier
                     .size(34.dp)
-                    .background(bg, RoundedCornerShape(10.dp)),
+                    .background(bg, CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(Icons.Rounded.Notifications, contentDescription = null, tint = tint, modifier = Modifier.size(17.dp))

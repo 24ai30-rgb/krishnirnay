@@ -1,5 +1,9 @@
 package com.krishinirnay.feature.profile
 
+import com.krishinirnay.core.designsystem.theme.KrishiTheme
+import com.krishinirnay.core.designsystem.motion.enterStagger
+import com.krishinirnay.core.designsystem.components.HeroCard
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -77,10 +81,11 @@ fun ProfileScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            item { ProfileHeaderCard(profile, strings.profileFarmSizeTemplate) }
-            item {
+            item(key = "header") { ProfileHeaderCard(profile, strings.profileFarmSizeTemplate) }
+            item(key = "completion") {
                 val completion = remember(profile) { profile.completion(strings) }
                 ProfileCompletionCard(
+                    modifier = Modifier.enterStagger(1),
                     percent = completion.percent,
                     missingLabels = completion.missingLabels,
                     completeMessage = strings.profileCompletionComplete,
@@ -88,15 +93,18 @@ fun ProfileScreen(
                     missingLabel = strings.profileCompletionMissingLabel,
                 )
             }
-            item {
-                KnCard(contentPadding = PaddingValues(vertical = 4.dp)) {
-                    MenuRow(Icons.Rounded.Spa, Color(0xFF1E7D44), Color(0xFFE3F5E9), strings.profileMyCrops, onNavigateToCrops, subtitle = profile.crops.joinToString(", "))
-                    MenuRow(Icons.Rounded.Landscape, Color(0xFFB07A2E), Color(0xFFF6EBDA), strings.profileMyFarm, onNavigateToFarm)
-                    MenuRow(Icons.Rounded.Sensors, Color(0xFF2F80ED), Color(0xFFE4EFFD), strings.profileMyEquipment, onNavigateToEquipment)
-                    MenuRow(Icons.Rounded.Description, Color(0xFF8E5FD1), Color(0xFFEEE6FA), strings.profileMyDocuments, onNavigateToDocuments)
-                    MenuRow(Icons.Rounded.AccountBalance, Color(0xFFB0742E), Color(0xFFF6EEDA), strings.dashboardQaSchemes, onNavigateToSchemes)
-                    MenuRow(Icons.Rounded.Settings, Color(0xFF5B665F), Color(0xFFF1F3EF), strings.settings, onNavigateToSettings)
-                    MenuRow(Icons.Rounded.Language, Color(0xFF12A594), Color(0xFFDFF5F1), strings.settingsLanguage, onNavigateToSettings, showDivider = false)
+            item(key = "menu") {
+                val c = KrishiTheme.colors
+                val primary = MaterialTheme.colorScheme.primary
+                val primaryBg = MaterialTheme.colorScheme.primaryContainer
+                KnCard(modifier = Modifier.enterStagger(2), contentPadding = PaddingValues(vertical = 4.dp)) {
+                    MenuRow(Icons.Rounded.Spa, primary, primaryBg, strings.profileMyCrops, onNavigateToCrops, subtitle = profile.crops.joinToString(", "))
+                    MenuRow(Icons.Rounded.Landscape, c.accent, c.accentContainer, strings.profileMyFarm, onNavigateToFarm)
+                    MenuRow(Icons.Rounded.Sensors, c.info, c.infoContainer, strings.profileMyEquipment, onNavigateToEquipment)
+                    MenuRow(Icons.Rounded.Description, c.secondary, c.secondaryContainer, strings.profileMyDocuments, onNavigateToDocuments)
+                    MenuRow(Icons.Rounded.AccountBalance, c.accent, c.accentContainer, strings.dashboardQaSchemes, onNavigateToSchemes)
+                    MenuRow(Icons.Rounded.Settings, c.riskUnknown, c.riskUnknownContainer, strings.settings, onNavigateToSettings)
+                    MenuRow(Icons.Rounded.Language, c.secondary, c.secondaryContainer, strings.settingsLanguage, onNavigateToSettings, showDivider = false)
                 }
             }
         }
@@ -105,22 +113,29 @@ fun ProfileScreen(
 
 @Composable
 private fun ProfileHeaderCard(profile: FarmerProfile, farmSizeTemplate: String) {
-    KnCard {
+    val c = KrishiTheme.colors
+    HeroCard(modifier = Modifier.enterStagger(0)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
-                modifier = Modifier.size(56.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
+                modifier = Modifier.size(60.dp).clip(CircleShape).background(c.lime),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(Icons.Rounded.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(28.dp))
+                Text(
+                    (profile.name.trim().firstOrNull() ?: 'K').uppercaseChar().toString(),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = c.onLime,
+                )
             }
             Spacer(Modifier.size(14.dp))
-            Column {
-                Text(profile.name, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                Text(profile.phone, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(profile.name, style = MaterialTheme.typography.titleLarge, color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(profile.phone, style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.85f))
                 Text(
                     text = "${profile.location} · ${String.format(farmSizeTemplate, formatAcres(profile.farmSizeAcres))}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color.White.copy(alpha = 0.85f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }
@@ -151,14 +166,14 @@ private fun MenuRow(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
-                modifier = Modifier.size(34.dp).clip(RoundedCornerShape(10.dp)).background(iconBg),
+                modifier = Modifier.size(36.dp).clip(CircleShape).background(iconBg),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(17.dp))
             }
             Spacer(Modifier.size(14.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(label, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+                Text(label, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 if (!subtitle.isNullOrBlank()) {
                     Text(subtitle, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }

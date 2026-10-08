@@ -1,5 +1,8 @@
 package com.krishinirnay.feature.whatif
 
+import com.krishinirnay.core.designsystem.motion.enterStagger
+import com.krishinirnay.core.designsystem.components.KnButton
+import com.krishinirnay.core.designsystem.components.HeroCard
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -54,7 +57,7 @@ fun WhatIfScreen(
             )
             Spacer(Modifier.size(16.dp))
 
-            KnCard {
+            KnCard(modifier = Modifier.enterStagger(0)) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text("Delay irrigation by", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(
@@ -82,23 +85,20 @@ fun WhatIfScreen(
 
             Spacer(Modifier.size(14.dp))
 
-            KnCard {
-                Text("Predicted risk after delay", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            HeroCard(modifier = Modifier.enterStagger(1)) {
+                Text("Predicted risk after delay".uppercase(), style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = 0.85f))
                 Spacer(Modifier.size(10.dp))
-                RiskBadge(level = uiState.predictedRisk, size = RiskBadgeSize.Hero)
+                RiskBadge(level = uiState.predictedRisk, size = RiskBadgeSize.Compact)
             }
 
             Spacer(Modifier.weight(1f))
 
-            Button(
+            KnButton(
+                text = "Simulate Irrigation Now",
                 onClick = viewModel::simulateIrrigationNow,
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth().height(48.dp),
-            ) {
-                Icon(Icons.Rounded.WaterDrop, contentDescription = null, tint = Color.White, modifier = Modifier.size(17.dp))
-                Spacer(Modifier.size(8.dp))
-                Text("Simulate Irrigation Now", fontWeight = FontWeight.Bold)
-            }
+                icon = Icons.Rounded.WaterDrop,
+                modifier = Modifier.fillMaxWidth().enterStagger(2),
+            )
         }
     }
 }

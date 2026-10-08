@@ -1,5 +1,14 @@
 package com.krishinirnay.feature.schemes
 
+import com.krishinirnay.core.designsystem.theme.KrishiTheme
+import com.krishinirnay.core.designsystem.motion.enterStagger
+import com.krishinirnay.core.designsystem.components.AnimatedNumber
+import com.krishinirnay.core.designsystem.components.HeroCard
+import com.krishinirnay.core.designsystem.components.KnButtonStyle
+import com.krishinirnay.core.designsystem.components.KnButton
+import kotlin.math.roundToInt
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -57,12 +66,24 @@ fun SchemesScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            item {
-                Text(
-                    text = strings.schemesSubtitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+            item(key = "hero") {
+                HeroCard(modifier = Modifier.enterStagger(0)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        AnimatedNumber(
+                            target = matchedSchemes.size.toFloat(),
+                            format = { it.roundToInt().toString() },
+                            style = MaterialTheme.typography.displayMedium,
+                            color = KrishiTheme.colors.lime,
+                        )
+                        Spacer(Modifier.size(12.dp))
+                        Text(
+                            text = strings.schemesSubtitle,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color.White,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                }
             }
             if (matchedSchemes.isEmpty()) {
                 item {
@@ -75,8 +96,9 @@ fun SchemesScreen(
                     }
                 }
             }
-            items(matchedSchemes, key = { it.scheme.id }) { matched ->
+            itemsIndexed(matchedSchemes, key = { _, it -> it.scheme.id }) { index, matched ->
                 SchemeCard(
+                    Modifier.enterStagger(index),
                     matched,
                     strings.schemesViewDetails,
                     strings.schemesHideDetails,
@@ -91,6 +113,7 @@ fun SchemesScreen(
 
 @Composable
 private fun SchemeCard(
+    modifier: Modifier,
     matched: MatchedScheme,
     viewDetailsLabel: String,
     hideDetailsLabel: String,
@@ -100,16 +123,16 @@ private fun SchemeCard(
 ) {
     val scheme = matched.scheme
     var expanded by remember { mutableStateOf(false) }
-    KnCard(modifier = Modifier.fillMaxWidth().animateContentSize()) {
+    KnCard(modifier = modifier.fillMaxWidth().animateContentSize()) {
         Row(verticalAlignment = Alignment.Top) {
             Box(
                 modifier = Modifier
                     .size(36.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0xFFE3F5E9)),
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(Icons.Rounded.AccountBalance, contentDescription = null, tint = Color(0xFF1E7D44), modifier = Modifier.size(18.dp))
+                Icon(Icons.Rounded.AccountBalance, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
             }
             Spacer(Modifier.size(12.dp))
             Text(
@@ -152,12 +175,11 @@ private fun SchemeCard(
             }
         }
         Spacer(Modifier.size(12.dp))
-        Button(
+        KnButton(
+            text = if (expanded) hideDetailsLabel else viewDetailsLabel,
             onClick = { expanded = !expanded },
-            shape = RoundedCornerShape(12.dp),
+            style = KnButtonStyle.Secondary,
             modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text(if (expanded) hideDetailsLabel else viewDetailsLabel)
-        }
+        )
     }
 }

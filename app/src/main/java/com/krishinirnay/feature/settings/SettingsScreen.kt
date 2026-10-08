@@ -122,7 +122,7 @@ fun SettingsScreen(
                         modifier = Modifier
                             .size(10.dp)
                             .clip(RoundedCornerShape(50))
-                            .background(if (uiState.aiStatus == LocalLlmStatus.READY) androidx.compose.ui.graphics.Color(0xFF1E7D44) else MaterialTheme.colorScheme.onSurfaceVariant),
+                            .background(if (uiState.aiStatus == LocalLlmStatus.READY) KrishiTheme.colors.riskLow else MaterialTheme.colorScheme.onSurfaceVariant),
                     )
                     Spacer(Modifier.size(8.dp))
                     Text(

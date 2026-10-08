@@ -1,5 +1,10 @@
 package com.krishinirnay.feature.analytics
 
+import com.krishinirnay.core.designsystem.motion.pressClickable
+import com.krishinirnay.core.designsystem.motion.enterStagger
+import com.krishinirnay.core.designsystem.motion.KrishiMotion
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -66,7 +71,7 @@ fun AnalyticsScreen(
         },
     ) { innerPadding ->
         Column(modifier = Modifier.fillMaxSize().padding(innerPadding).padding(16.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.enterStagger(0)) {
                 MetricChip("Moisture", selectedMetric == AnalyticsMetric.MOISTURE) { selectedMetric = AnalyticsMetric.MOISTURE }
                 MetricChip("Temperature", selectedMetric == AnalyticsMetric.TEMPERATURE) { selectedMetric = AnalyticsMetric.TEMPERATURE }
                 MetricChip("Humidity", selectedMetric == AnalyticsMetric.HUMIDITY) { selectedMetric = AnalyticsMetric.HUMIDITY }
@@ -82,14 +87,14 @@ fun AnalyticsScreen(
                 }
             } else {
                 val (values, unit, color) = when (selectedMetric) {
-                    AnalyticsMetric.MOISTURE -> Triple(uiState.soilMoistureHistory, "%", Color(0xFF2F80ED))
-                    AnalyticsMetric.TEMPERATURE -> Triple(uiState.temperatureHistory, "°C", Color(0xFFF2994A))
-                    AnalyticsMetric.HUMIDITY -> Triple(uiState.humidityHistory, "%", Color(0xFF12A594))
+                    AnalyticsMetric.MOISTURE -> Triple(uiState.soilMoistureHistory, "%", KrishiTheme.colors.info)
+                    AnalyticsMetric.TEMPERATURE -> Triple(uiState.temperatureHistory, "°C", KrishiTheme.colors.accent)
+                    AnalyticsMetric.HUMIDITY -> Triple(uiState.humidityHistory, "%", MaterialTheme.colorScheme.primary)
                 }
-                KnCard(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                KnCard(modifier = Modifier.fillMaxWidth().weight(1f).enterStagger(1)) {
                     Text(
                         text = "${metricLabel(selectedMetric)} · this session",
-                        style = MaterialTheme.typography.labelSmall,
+                        style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Spacer(Modifier.size(8.dp))
@@ -115,18 +120,16 @@ fun AnalyticsScreen(
 
 @Composable
 private fun MetricChip(label: String, selected: Boolean, onClick: () -> Unit) {
+    val bg by animateColorAsState(if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface, tween(KrishiMotion.STANDARD), label = "chipBg")
+    val fg by animateColorAsState(if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant, tween(KrishiMotion.STANDARD), label = "chipFg")
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(if (selected) MaterialTheme.colorScheme.primaryContainer else KrishiTheme.colors.surfaceAlt)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 7.dp),
+            .clip(RoundedCornerShape(50))
+            .background(bg)
+            .pressClickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 9.dp),
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Text(text = label, style = MaterialTheme.typography.labelLarge, color = fg, maxLines = 1)
     }
 }
 

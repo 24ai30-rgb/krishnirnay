@@ -1,5 +1,10 @@
 package com.krishinirnay.feature.insights
 
+import com.krishinirnay.core.designsystem.theme.KrishiTheme
+import com.krishinirnay.core.designsystem.motion.enterStagger
+import com.krishinirnay.core.designsystem.components.KnButton
+import com.krishinirnay.core.designsystem.components.HeroCard
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -56,32 +61,32 @@ fun AiInsightsScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            item {
-                KnCard {
+            item(key = "hero") {
+                HeroCard(modifier = Modifier.enterStagger(0)) {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                        RiskBadge(level = uiState.overallRisk, size = RiskBadgeSize.Hero)
+                        RiskBadge(level = uiState.overallRisk, size = RiskBadgeSize.Compact)
                         Spacer(Modifier.weight(1f))
                         Text(
                             text = "${uiState.confidencePct}% confidence",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = KrishiTheme.colors.lime,
                         )
                     }
-                    Spacer(Modifier.size(10.dp))
+                    Spacer(Modifier.size(12.dp))
                     Text(
                         text = if (uiState.isPolished) {
                             uiState.polishedText.orEmpty()
                         } else {
                             uiState.recommendation?.let(strings::textFor) ?: strings.dashboardGatheringReading
                         },
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.White,
                     )
                 }
             }
-            item {
-                KnCard {
-                    Text("WHY THIS RECOMMENDATION", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            item(key = "why") {
+                KnCard(modifier = Modifier.enterStagger(1)) {
+                    Text("WHY THIS RECOMMENDATION", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(Modifier.size(10.dp))
                     uiState.reasons.forEach { reason ->
                         Row(verticalAlignment = Alignment.Top, modifier = Modifier.padding(bottom = 8.dp)) {
@@ -121,16 +126,13 @@ fun AiInsightsScreen(
                     }
                 }
             }
-            item {
-                Button(
+            item(key = "whatif") {
+                KnButton(
+                    text = "Try What-If: Irrigation Delay",
                     onClick = onNavigateToWhatIf,
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth().height(48.dp),
-                ) {
-                    Icon(Icons.Rounded.WaterDrop, contentDescription = null, modifier = Modifier.size(17.dp))
-                    Spacer(Modifier.size(8.dp))
-                    Text("Try What-If: Irrigation Delay")
-                }
+                    icon = Icons.Rounded.WaterDrop,
+                    modifier = Modifier.fillMaxWidth().enterStagger(2),
+                )
             }
         }
     }
