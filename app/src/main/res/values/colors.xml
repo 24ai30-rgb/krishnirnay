@@ -1,7 +1,7 @@
 <resources>
-    <!-- Used only by the pre-Compose window/launcher theme below — the
-         real design tokens live in core/designsystem/theme/Color.kt and
-         are what every Composable actually reads from. -->
-    <color name="window_background">#FAFAF7</color>
-    <color name="launcher_background">#E3F5E9</color>
+    <!-- Used only by the pre-Compose window/splash themes — the real design
+         tokens live in core/designsystem/theme/Color.kt. -->
+    <color name="window_background">#F6F8F3</color>
+    <color name="launcher_background">#DDF1E3</color>
+    <color name="splash_background">#0E5A34</color>
 </resources>

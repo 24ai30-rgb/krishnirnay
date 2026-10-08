@@ -77,7 +77,7 @@ fun SimulationScreen(
                 SensorScenario.HIGH_HUMIDITY to strings.simulationHighHumidity,
                 SensorScenario.LOW_HUMIDITY to strings.simulationLowHumidity,
             )
-            items(scenarios) { (scenario, label) ->
+            items(scenarios, key = { it.first.name }, contentType = { "scenario" }) { (scenario, label) ->
                 Button(
                     onClick = { viewModel.applyScenario(scenario) },
                     enabled = uiState.isMockModeActive,

@@ -132,7 +132,7 @@ fun WeatherScreen(
                     1 -> weather.daily.take(3)
                     else -> weather.daily
                 }
-                items(daysToShow.size) { index ->
+                items(daysToShow.size, key = { "${daysToShow[it].dayLabel}-$it" }, contentType = { "day" }) { index ->
                     DayForecastRow(daysToShow[index])
                 }
                 item {

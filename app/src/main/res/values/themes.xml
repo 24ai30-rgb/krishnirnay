@@ -1,11 +1,13 @@
 <resources>
-    <!-- Light-only for Phase 1 (see plan §10 "Dark mode") — Material3.Light
-         parent, not DayNight, so the pre-Compose window frame never flips
-         dark even if the system theme does. Compose's own KrishiNirnayTheme
-         (core/designsystem/theme/Theme.kt) is what actually themes content. -->
-    <style name="Theme.KrishiNirnay" parent="Theme.Material3.Light.NoActionBar">
+    <!-- DayNight so the pre-Compose window matches the system theme; the
+         in-app Light/Dark choice is applied by KrishiNirnayTheme in Compose. -->
+    <style name="Theme.KrishiNirnay" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:windowBackground">@color/window_background</item>
-        <item name="android:statusBarColor">@color/window_background</item>
-        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <style name="Theme.KrishiNirnay.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.KrishiNirnay</item>
     </style>
 </resources>
