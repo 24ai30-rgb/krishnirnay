@@ -399,3 +399,64 @@ def test_on_device_model_serves_the_real_file_with_its_real_size_when_staged(tmp
     assert response.content == b"fake-model-bytes-for-test"
     # OnDeviceModelManager refuses to download without a real declared size.
     assert int(response.headers["content-length"]) == len(b"fake-model-bytes-for-test")
+
+
+# ---------------------------------------------------------------------------
+# The assistant must ANSWER the farmer's question, not recite the field facts.
+# Observed on a real device: "hello" and "my name is X" both got "your soil
+# moisture is a bit low..." because the prompt said "answer using ONLY the
+# facts above in at most 2 sentences".
+# ---------------------------------------------------------------------------
+
+from app.routers.local_llm import _SYSTEM_PROMPTS, _build_prompt
+from app.schemas.local_llm import LocalLlmChatRequest, LocalLlmContext
+
+
+def _request(message: str, language: str = "en") -> LocalLlmChatRequest:
+    return LocalLlmChatRequest(
+        message=message,
+        context=LocalLlmContext(language=language, crop="Soybean", soil_moisture_pct=21.0, temperature_c=29.0),
+    )
+
+
+def test_prompt_asks_the_model_to_answer_the_question_not_to_recite_facts():
+    prompt = _build_prompt(_request("hello"), "en")
+    assert '"hello"' in prompt
+    assert "ONLY the facts" not in prompt
+    assert "directly" in prompt.lower()
+    assert "do not just repeat" in prompt.lower()
+
+
+def test_prompt_frames_field_data_as_optional_background():
+    prompt = _build_prompt(_request("how to protect soybean from yellow mosaic virus?"), "en")
+    assert "only if relevant" in prompt.lower()
+    # the facts are still there for questions that need them
+    assert "Soybean" in prompt and "21.0" in prompt
+
+
+def test_english_system_prompt_handles_greetings_and_general_farming_questions():
+    system = _SYSTEM_PROMPTS["en"]
+    assert "greet" in system.lower()
+    assert "general farming" in system.lower()
+
+
+def test_system_prompts_still_forbid_inventing_field_data_and_doses():
+    system = _SYSTEM_PROMPTS["en"]
+    assert "NEVER invent" in system
+    assert "dose" in system.lower()
+
+
+def test_hindi_and_marathi_prompts_also_answer_the_question():
+    # (language, word in the per-message instruction, word in the system prompt)
+    for language, prompt_marker, system_marker in (("hi", "सीधा", "सीधे"), ("mr", "थेट", "थेट")):
+        prompt = _build_prompt(_request("नमस्ते", language), language)
+        assert '"नमस्ते"' in prompt
+        assert prompt_marker in prompt
+        assert system_marker in _SYSTEM_PROMPTS[language]
+
+
+def test_prompt_tells_the_model_not_to_mention_field_data_for_small_talk():
+    for language, marker in (("en", "greeting or small talk"), ("hi", "अभिवादन"), ("mr", "नमस्कार")):
+        prompt = _build_prompt(_request("hello", language), language)
+        # the per-message instruction (the last thing the model reads) must say it
+        assert marker in prompt.split('"hello"')[-1]
