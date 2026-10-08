@@ -129,7 +129,7 @@ Requirements: Android Studio, JDK 17, Android SDK 35.
 
 | Suite | Command | Result |
 |---|---|---|
-| Android unit tests | `gradlew :app:testDebugUnitTest` | 207 passing |
+| Android unit tests | `gradlew :app:testDebugUnitTest` | 218 passing |
 | Android lint | `gradlew :app:lintDebug` | 0 errors |
 | Server | `cd server && python -m pytest` | 223 passing |
 
