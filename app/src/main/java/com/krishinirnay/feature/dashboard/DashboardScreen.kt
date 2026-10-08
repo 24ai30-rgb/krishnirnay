@@ -1,5 +1,25 @@
 package com.krishinirnay.feature.dashboard
 
+import androidx.compose.material.icons.rounded.Mic
+import kotlin.math.roundToInt
+import com.krishinirnay.core.designsystem.strings.nameFor
+import com.krishinirnay.core.designsystem.motion.pulse
+import com.krishinirnay.core.designsystem.motion.pressClickable
+import com.krishinirnay.core.designsystem.motion.enterStagger
+import com.krishinirnay.core.designsystem.components.SectionHeader
+import com.krishinirnay.core.designsystem.components.RingGauge
+import com.krishinirnay.core.designsystem.components.QuickActionTile
+import com.krishinirnay.core.designsystem.components.HeroCard
+import com.krishinirnay.core.designsystem.components.GaugeFormat
+import androidx.compose.material.icons.rounded.VolumeUp
+import androidx.compose.material.icons.rounded.HelpOutline
+import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material.icons.rounded.Error
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -132,11 +152,12 @@ fun DashboardScreen(
             FloatingActionButton(
                 onClick = onNavigateToChatbot,
                 containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = RoundedCornerShape(18.dp),
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.ChatBubble,
+                    imageVector = Icons.Rounded.Mic,
                     contentDescription = strings.contentDescOpenChatbot,
-                    tint = Color.White,
                 )
             }
         },
@@ -157,6 +178,7 @@ fun DashboardScreen(
             onNavigateToFarmSetup = onNavigateToFarmSetup,
             onViewMoreMarkets = onViewMoreMarkets,
             onNavigateToChatbot = onNavigateToChatbot,
+            onListen = viewModel::speakDecision,
             modifier = Modifier.padding(innerPadding),
         )
     }
@@ -179,180 +201,119 @@ private fun DashboardContent(
     onNavigateToFarmSetup: () -> Unit,
     onViewMoreMarkets: () -> Unit,
     onNavigateToChatbot: () -> Unit,
+    onListen: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // One gesture refreshes both cards — they're the two provider-backed
-    // readings on this screen, and a farmer pulling to refresh means "get me
-    // the latest", not "just the one I happen to be looking at".
+    // One gesture refreshes both provider-backed cards.
     val isRefreshing = uiState.weather?.status == DataSourceStatus.LOADING ||
         uiState.market?.status == DataSourceStatus.LOADING
+    // Hoisted so the hero's "Mark done" jumps the feedback card straight to "What happened?".
+    var feedbackAction by remember { mutableStateOf<FeedbackAction?>(null) }
+    var feedbackSubmitted by remember { mutableStateOf(false) }
+
     PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = { onRetryWeather(); onRetryMarket() },
         modifier = modifier.fillMaxSize(),
     ) {
-        // A single, one-time entrance for the above-the-fold content only —
-        // not per LazyColumn item, which would cost a recomposition/measure
-        // pass on every card during scroll for no visible benefit once the
-        // screen has already appeared once.
-        var entered by remember { mutableStateOf(false) }
-        androidx.compose.runtime.LaunchedEffect(Unit) { entered = true }
-
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
+            contentPadding = PaddingValues(start = 16.dp, top = 4.dp, end = 16.dp, bottom = 96.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-
-            // =========================================================
-            // GREETING HEADER
-            // =========================================================
-            item {
-                AnimatedVisibility(visible = entered, enter = fadeIn(tween(280))) {
-                    HomeGreetingHeader(uiState, strings)
-                }
+            item(key = "greeting") {
+                HomeGreetingHeader(uiState, strings, Modifier.enterStagger(0))
             }
 
-            // =========================================================
-            // FARM TODAY — the one summary that answers "how is my farm
-            // doing today": crop/location, weather glance, overall risk +
-            // recommendation, market glance. Full weather/market detail
-            // still lives in their own cards further down.
-            // =========================================================
-            item {
-                AnimatedVisibility(
-                    visible = entered,
-                    enter = fadeIn(tween(320)) + slideInVertically(tween(320)) { it / 12 },
-                ) {
-                    FarmTodayCard(
-                        uiState = uiState,
-                        strings = strings,
-                        onViewFullAnalysis = onViewFullAnalysis,
-                        onOpenWeather = onNavigateToWeather,
-                        onOpenMarket = onViewMoreMarkets,
-                    )
-                }
+            item(key = "hero") {
+                DecisionHero(
+                    uiState = uiState,
+                    strings = strings,
+                    markedDone = feedbackAction == FeedbackAction.YES || feedbackSubmitted,
+                    onMarkDone = { if (!feedbackSubmitted) feedbackAction = FeedbackAction.YES },
+                    onListen = onListen,
+                    onOpenInsights = onViewFullAnalysis,
+                    modifier = Modifier.enterStagger(1),
+                )
             }
 
-            // =========================================================
-            // QUICK ACTIONS — the 5 places a farmer goes most.
-            // =========================================================
-            item {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text(
-                        text = strings.dashboardQuickAccess,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-                        QuickActionTile(Icons.Rounded.Spa, strings.dashboardQaAdvisory, KrishiTheme.colors.riskLow, KrishiTheme.colors.riskLowContainer, onNavigateToAdvisory, Modifier.weight(1f))
-                        QuickActionTile(Icons.Rounded.Cloud, strings.navWeather, KrishiTheme.colors.info, KrishiTheme.colors.infoContainer, onNavigateToWeather, Modifier.weight(1f))
-                        QuickActionTile(Icons.Rounded.CurrencyRupee, strings.dashboardQaMarket, KrishiTheme.colors.accent, KrishiTheme.colors.accentContainer, onViewMoreMarkets, Modifier.weight(1f))
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-                        QuickActionTile(Icons.Rounded.CameraAlt, strings.dashboardQaDisease, MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer, onNavigateToCropHealth, Modifier.weight(1f))
-                        QuickActionTile(Icons.Rounded.AutoAwesome, strings.dashboardQaAssistant, KrishiTheme.colors.secondary, KrishiTheme.colors.secondaryContainer, onNavigateToChatbot, Modifier.weight(1f))
-                        QuickActionTile(Icons.Rounded.Agriculture, strings.dashboardQaFarmSetup, KrishiTheme.colors.riskUnknown, KrishiTheme.colors.riskUnknownContainer, onNavigateToFarmSetup, Modifier.weight(1f))
+            if (uiState.recommendation != null) {
+                item(key = "feedback") {
+                    KnCard(modifier = Modifier.fillMaxWidth().enterStagger(2)) {
+                        FeedbackWidget(
+                            strings = strings,
+                            action = feedbackAction,
+                            onAction = { feedbackAction = it },
+                            submitted = feedbackSubmitted,
+                            onSubmitted = { feedbackSubmitted = true },
+                        )
                     }
                 }
             }
 
-            // =========================================================
-            // WEATHER — full detail (kept distinct from the Farm Today
-            // glance; this is what LIVE/CACHED/UNAVAILABLE, humidity, wind,
-            // UV etc. actually live in).
-            // =========================================================
-            uiState.weather?.let { weather ->
-                item {
-                    WeatherDetailCard(weather, uiState, strings, onNavigateToWeather, onRetryWeather)
+            item(key = "gauges") {
+                SensorGaugesCard(uiState, strings, onNavigateToMonitoring, Modifier.enterStagger(3))
+            }
+
+            item(key = "qa") {
+                Column(modifier = Modifier.enterStagger(4), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    SectionHeader(strings.dashboardQuickAccess)
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                        QuickActionTile(Icons.Rounded.CameraAlt, strings.dashboardQaDisease, onNavigateToCropHealth, Modifier.weight(1f))
+                        QuickActionTile(Icons.Rounded.BugReport, strings.dashboardQaPests, onNavigateToPestDetection, Modifier.weight(1f), tint = KrishiTheme.colors.riskHigh)
+                        QuickActionTile(Icons.Rounded.Cloud, strings.navWeather, onNavigateToWeather, Modifier.weight(1f), tint = KrishiTheme.colors.info)
+                        QuickActionTile(Icons.Rounded.AccountBalance, strings.dashboardQaSchemes, onNavigateToSchemes, Modifier.weight(1f), tint = KrishiTheme.colors.accent)
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                        QuickActionTile(Icons.Rounded.CurrencyRupee, strings.dashboardQaMarket, onViewMoreMarkets, Modifier.weight(1f), tint = KrishiTheme.colors.accent)
+                        QuickActionTile(Icons.Rounded.Spa, strings.dashboardQaAdvisory, onNavigateToAdvisory, Modifier.weight(1f))
+                        QuickActionTile(Icons.Rounded.AutoAwesome, strings.dashboardQaAssistant, onNavigateToChatbot, Modifier.weight(1f), tint = KrishiTheme.colors.secondary)
+                        QuickActionTile(Icons.Rounded.Agriculture, strings.dashboardQaFarmSetup, onNavigateToFarmSetup, Modifier.weight(1f), tint = KrishiTheme.colors.riskUnknown)
+                    }
                 }
             }
 
-            // =========================================================
-            // MARKET — full detail.
-            // =========================================================
-            uiState.market?.let { market ->
-                item {
-                    MarketDetailCard(market, uiState, strings, onRetryMarket, onNavigateToFarmSetup, onViewMoreMarkets)
-                }
-            }
-
-            // =========================================================
-            // SUB RISKS
-            // =========================================================
-            item {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    SubRiskCard(Icons.Rounded.WaterDrop, Color(0xFF2F80ED), Color(0xFFE4EFFD), strings.dashboardWaterStress, uiState.waterStressRisk, Modifier.weight(1f))
-                    SubRiskCard(Icons.Rounded.Thermostat, Color(0xFFF2994A), Color(0xFFFDECDD), strings.dashboardHeat, uiState.heatRisk, Modifier.weight(1f))
+            item(key = "subrisks") {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth().enterStagger(5)) {
+                    SubRiskCard(Icons.Rounded.WaterDrop, KrishiTheme.colors.info, KrishiTheme.colors.infoContainer, strings.dashboardWaterStress, uiState.waterStressRisk, Modifier.weight(1f))
+                    SubRiskCard(Icons.Rounded.Thermostat, KrishiTheme.colors.accent, KrishiTheme.colors.accentContainer, strings.dashboardHeat, uiState.heatRisk, Modifier.weight(1f))
                     SubRiskCard(Icons.Rounded.Grass, MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer, strings.dashboardCropHealth, uiState.cropHealthRisk, Modifier.weight(1f))
                 }
             }
 
-            // =========================================================
-            // LIVE SENSOR DATA
-            // =========================================================
-            item {
-                KnCard(modifier = Modifier.fillMaxWidth()) {
-                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Rounded.Sensors, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-                        Spacer(Modifier.size(8.dp))
-                        Text("Live Sensor Data", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
-                    }
-                    Spacer(Modifier.size(12.dp))
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        SensorValueCard(Icons.Rounded.Thermostat, "Temperature", String.format("%.1f°C", uiState.temperatureC), Modifier.weight(1f))
-                        SensorValueCard(Icons.Rounded.WaterDrop, "Humidity", String.format("%.1f%%", uiState.humidityPct), Modifier.weight(1f))
-                        SensorValueCard(Icons.Rounded.Grass, "Soil Moisture", String.format("%.1f%%", uiState.soilMoisturePct), Modifier.weight(1f))
-                    }
-                    Spacer(Modifier.size(10.dp))
-                    Text(
-                        text = when (uiState.dataSourceStatus) {
-                            DataSourceStatus.LIVE -> "ESP32 • Live readings"
-                            DataSourceStatus.CACHED -> "Device unreachable • Showing last known reading"
-                            DataSourceStatus.MOCK -> "Demo mode • Simulated readings"
-                            DataSourceStatus.LOADING -> "Connecting to sensors..."
-                            DataSourceStatus.NO_DATA, DataSourceStatus.UNAVAILABLE -> "Sensor data not available yet"
-                        },
-                        style = MaterialTheme.typography.labelSmall,
-                        color = if (uiState.dataSourceStatus == DataSourceStatus.CACHED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+            uiState.weather?.let { weather ->
+                item(key = "weather") {
+                    Box(Modifier.enterStagger(6)) { WeatherDetailCard(weather, uiState, strings, onNavigateToWeather, onRetryWeather) }
                 }
             }
 
-            // =========================================================
-            // CROP HEALTH SCAN — Disease + Pest folded into one card
-            // (previously two full-width promotional cards).
-            // =========================================================
-            item {
-                KnCard(modifier = Modifier.fillMaxWidth()) {
-                    Text("Crop Health Scan", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
-                    Spacer(Modifier.size(3.dp))
-                    Text("Scan a leaf with your camera to check for disease or pests", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(Modifier.size(14.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-                        ScanChip(Icons.Rounded.CameraAlt, "Disease", MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer, onNavigateToCropHealth, Modifier.weight(1f))
-                        ScanChip(Icons.Rounded.BugReport, "Pests", Color(0xFFD64545), Color(0xFFFBE3E3), onNavigateToPestDetection, Modifier.weight(1f))
+            uiState.market?.let { market ->
+                item(key = "market") {
+                    Box(Modifier.enterStagger(7)) { MarketDetailCard(market, uiState, strings, onRetryMarket, onNavigateToFarmSetup, onViewMoreMarkets) }
+                }
+            }
+
+            uiState.fertilizerRecommendation?.let { fertilizer ->
+                item(key = "fertilizer") {
+                    KnCard(modifier = Modifier.fillMaxWidth().enterStagger(8)) {
+                        Text(strings.dashboardFertilizerLabel, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Spacer(Modifier.size(4.dp))
+                        Text(strings.textFor(fertilizer), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
             }
 
-            // =========================================================
-            // CROP HEALTH STATUS (real scan results, if any)
-            // =========================================================
             if (uiState.diseaseResult != null || uiState.pestResult != null) {
-                item {
+                item(key = "scan") {
                     KnCard(modifier = Modifier.fillMaxWidth()) {
-                        Text("Latest scan results", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(strings.dashboardLatestScan, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(Modifier.size(6.dp))
                         uiState.diseaseResult?.let { disease ->
-                            Text("Disease: ${disease.displayName} (${(disease.confidence * 100).toInt()}%)", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+                            Text("${disease.displayName} · ${(disease.confidence * 100).toInt()}%", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
                         }
                         uiState.pestResult?.let { pest ->
                             Text(
-                                text = if (pest.detected) "Pest: ${pest.label ?: "detected"} (${(pest.confidence * 100).toInt()}%)" else "Pest: none detected",
+                                text = if (pest.detected) "${pest.label ?: strings.dashboardQaPests} · ${(pest.confidence * 100).toInt()}%" else "${strings.dashboardQaPests}: —",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
@@ -361,16 +322,13 @@ private fun DashboardContent(
                 }
             }
 
-            // =========================================================
-            // DEVICE STATUS — a slim strip, not a full padded card.
-            // =========================================================
-            item {
+            item(key = "device") {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 2.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Box(
-                        modifier = Modifier.size(8.dp).clip(CircleShape)
+                        modifier = Modifier.size(8.dp).pulse(uiState.isDeviceOnline).clip(CircleShape)
                             .background(if (uiState.isDeviceOnline) KrishiTheme.colors.riskLow else KrishiTheme.colors.riskUnknown),
                     )
                     Spacer(Modifier.size(8.dp))
@@ -387,115 +345,143 @@ private fun DashboardContent(
                     )
                 }
             }
-
-            // Bottom spacer for FAB
-            item { Spacer(Modifier.size(64.dp)) }
         }
     }
 }
 
 // =================================================================
-// FARM TODAY — the flagship summary card
+// DECISION HERO — today's one answer, on the brand gradient
 // =================================================================
 
 @Composable
-private fun FarmTodayCard(
+private fun DecisionHero(
     uiState: DashboardUiState,
     strings: AppStrings,
-    onViewFullAnalysis: () -> Unit,
-    onOpenWeather: () -> Unit,
-    onOpenMarket: () -> Unit,
+    markedDone: Boolean,
+    onMarkDone: () -> Unit,
+    onListen: (String) -> Unit,
+    onOpenInsights: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    KnCard(modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(18.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(strings.dashboardOverallRisk, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(Modifier.size(6.dp))
-                RiskBadge(level = uiState.overallRisk, size = RiskBadgeSize.Hero)
-            }
-            // Weather-at-a-glance — tappable straight through to the full
-            // Weather screen. Only shown once real data (not LOADING/
-            // UNAVAILABLE) exists, never a placeholder temperature. Kept to
-            // icon+temp only (full detail — rain%, humidity, wind — lives in
-            // the dedicated Weather card below): the more this glance takes,
-            // the less room the primary risk badge gets on a narrow/scaled
-            // display, which is exactly what pushed "Medium" into ellipsis
-            // before this was trimmed down.
-            uiState.weather?.takeIf { it.status != DataSourceStatus.LOADING && it.status != DataSourceStatus.UNAVAILABLE }?.let { weather ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable(onClick = onOpenWeather),
-                ) {
-                    Icon(Icons.Rounded.Cloud, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
-                    Spacer(Modifier.size(4.dp))
-                    Text("${weather.currentTempC}°C", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                }
-            }
-        }
-
-        Spacer(Modifier.size(14.dp))
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-        Spacer(Modifier.size(14.dp))
-
+    val c = KrishiTheme.colors
+    val decision = uiState.recommendation?.let(strings::textFor) ?: strings.dashboardGatheringReading
+    val reasons = uiState.reasons.take(3).map(strings::textFor)
+    val crop = uiState.profile?.primaryCrop
+    HeroCard(modifier = modifier.pressClickable(onClick = onOpenInsights)) {
         Text(
-            text = uiState.recommendation?.let(strings::textFor) ?: strings.dashboardGatheringReading,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface,
+            text = listOfNotNull(strings.dashboardTodaysDecision, crop).joinToString(" · ").uppercase(),
+            style = MaterialTheme.typography.labelMedium,
+            color = Color.White.copy(alpha = 0.85f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
-
-        if (uiState.recommendation != null) {
-            Spacer(Modifier.size(8.dp))
-            Text("When: ${strings.textFor(uiState.timing)}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(strings.textFor(uiState.expectedBenefit), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-
-        if (uiState.reasons.isNotEmpty()) {
-            Spacer(Modifier.size(10.dp))
-            Text(strings.dashboardWhyLabel, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            uiState.reasons.take(3).forEach { reason ->
-                Text("• ${strings.textFor(reason)}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
-
-        uiState.fertilizerRecommendation?.let { fertilizer ->
-            Spacer(Modifier.size(10.dp))
-            Text(strings.dashboardFertilizerLabel, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(strings.textFor(fertilizer), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface)
-        }
-
-        // Market-at-a-glance — real price only, tappable through to Market.
-        uiState.market?.takeIf { it.status == DataSourceStatus.LIVE || it.status == DataSourceStatus.CACHED }
-            ?.takeIf { it.currentPricePerQuintal != null }
-            ?.let { market ->
-                Spacer(Modifier.size(12.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable(onClick = onOpenMarket)
-                        .background(KrishiTheme.colors.surfaceAlt).padding(10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(Icons.Rounded.CurrencyRupee, contentDescription = null, tint = KrishiTheme.colors.accent, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.size(8.dp))
-                    Text(
-                        text = "${market.crop}: ₹${market.currentPricePerQuintal!!.toInt()}/quintal" + (market.market?.let { " · $it" } ?: ""),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-            }
-
-        KnButton(
-            text = strings.dashboardViewFullAnalysis,
-            onClick = onViewFullAnalysis,
-            style = KnButtonStyle.Text,
-            modifier = Modifier.padding(top = 4.dp),
-        )
-
+        Spacer(Modifier.size(6.dp))
+        Text(decision, style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold, color = Color.White)
         if (uiState.recommendation != null) {
             Spacer(Modifier.size(4.dp))
-            FeedbackWidget(strings)
+            Text(strings.textFor(uiState.timing), style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.9f))
+        }
+        Spacer(Modifier.size(10.dp))
+        Row(
+            modifier = Modifier.pulse(uiState.overallRisk == RiskLevel.HIGH).clip(RoundedCornerShape(50)).background(c.lime)
+                .padding(horizontal = 10.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = when (uiState.overallRisk) {
+                    RiskLevel.HIGH -> Icons.Rounded.Error
+                    RiskLevel.MEDIUM -> Icons.Rounded.Warning
+                    RiskLevel.LOW -> Icons.Rounded.CheckCircle
+                    RiskLevel.UNKNOWN -> Icons.Rounded.HelpOutline
+                },
+                contentDescription = null,
+                tint = c.onLime,
+                modifier = Modifier.size(14.dp),
+            )
+            Spacer(Modifier.size(4.dp))
+            Text(
+                text = "${strings.dashboardOverallRisk}: ${strings.nameFor(uiState.overallRisk)}",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = c.onLime,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        if (reasons.isNotEmpty()) {
+            Spacer(Modifier.size(10.dp))
+            reasons.forEach { reason ->
+                Text("• $reason", style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.92f))
+            }
+        }
+        if (uiState.recommendation != null) {
+            Spacer(Modifier.size(14.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                HeroPillButton(
+                    icon = if (markedDone) Icons.Rounded.CheckCircle else Icons.Rounded.Check,
+                    label = if (markedDone) strings.feedbackYes else strings.dashboardMarkDone,
+                    container = c.lime,
+                    content = c.onLime,
+                    onClick = onMarkDone,
+                    modifier = Modifier.weight(1f),
+                )
+                HeroPillButton(
+                    icon = Icons.Rounded.VolumeUp,
+                    label = strings.dashboardListen,
+                    container = Color.White.copy(alpha = 0.16f),
+                    content = Color.White,
+                    onClick = { onListen((listOf(decision) + reasons).joinToString(". ")) },
+                    modifier = Modifier.weight(1f),
+                )
+            }
         }
     }
+}
+
+@Composable
+private fun HeroPillButton(icon: ImageVector, label: String, container: Color, content: Color, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.clip(RoundedCornerShape(50)).background(container).pressClickable(onClick = onClick)
+            .padding(vertical = 11.dp, horizontal = 12.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(icon, contentDescription = null, tint = content, modifier = Modifier.size(18.dp))
+        Spacer(Modifier.size(6.dp))
+        Text(label, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold, color = content, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    }
+}
+
+// =================================================================
+// SENSOR GAUGES — three rings that sweep in; "—" when there's no reading
+// =================================================================
+
+@Composable
+private fun SensorGaugesCard(uiState: DashboardUiState, strings: AppStrings, onOpen: () -> Unit, modifier: Modifier = Modifier) {
+    val hasReading = uiState.dataSourceStatus !in setOf(DataSourceStatus.LOADING, DataSourceStatus.NO_DATA, DataSourceStatus.UNAVAILABLE)
+    val soil = uiState.soilMoisturePct.takeIf { hasReading }
+    val temp = uiState.temperatureC.takeIf { hasReading }
+    val humidity = uiState.humidityPct.takeIf { hasReading }
+    KnCard(modifier = modifier.fillMaxWidth(), onClick = onOpen) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Text(strings.dashboardLiveSensors, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+            StatusBadge(uiState.dataSourceStatus)
+        }
+        Spacer(Modifier.size(14.dp))
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            RingGauge(GaugeFormat.fraction(soil, 100f), GaugeFormat.percent(soil), strings.soilMoisture, riskColor(uiState.waterStressRisk), Modifier.weight(1f))
+            RingGauge(GaugeFormat.fraction(temp, 50f), temp?.let { "${it.roundToInt()}°" } ?: "—", strings.temperature, riskColor(uiState.heatRisk), Modifier.weight(1f))
+            RingGauge(GaugeFormat.fraction(humidity, 100f), GaugeFormat.percent(humidity), strings.humidity, MaterialTheme.colorScheme.primary, Modifier.weight(1f))
+        }
+    }
+}
+
+@Composable
+private fun riskColor(level: RiskLevel): Color = when (level) {
+    RiskLevel.LOW -> KrishiTheme.colors.riskLow
+    RiskLevel.MEDIUM -> KrishiTheme.colors.riskMedium
+    RiskLevel.HIGH -> KrishiTheme.colors.riskHigh
+    RiskLevel.UNKNOWN -> MaterialTheme.colorScheme.primary
 }
 
 // =================================================================
@@ -633,79 +619,6 @@ private fun MarketDetailCard(
 }
 
 // =================================================================
-// SENSOR VALUE CARD
-// =================================================================
-
-@Composable
-private fun SensorValueCard(icon: ImageVector, label: String, value: String, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier.clip(RoundedCornerShape(12.dp)).background(KrishiTheme.colors.surfaceAlt).padding(10.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-        Spacer(Modifier.size(6.dp))
-        Text(value, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, textAlign = TextAlign.Center)
-        Spacer(Modifier.size(3.dp))
-        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
-    }
-}
-
-// =================================================================
-// QUICK ACTION TILE — color-coded, larger touch target than before.
-// =================================================================
-
-@Composable
-private fun QuickActionTile(
-    icon: ImageVector,
-    label: String,
-    iconColor: Color,
-    iconBg: Color,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(targetValue = if (isPressed) 0.94f else 1f, label = "quickActionPress")
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
-            .scale(scale)
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
-            .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
-            .padding(vertical = 14.dp, horizontal = 4.dp),
-    ) {
-        Box(
-            modifier = Modifier.size(44.dp).clip(RoundedCornerShape(13.dp)).background(iconBg),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(22.dp))
-        }
-        Spacer(Modifier.size(8.dp))
-        Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface, textAlign = TextAlign.Center, maxLines = 2)
-    }
-}
-
-@Composable
-private fun ScanChip(icon: ImageVector, label: String, iconColor: Color, iconBg: Color, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(iconBg)
-            .clickable(onClick = onClick)
-            .padding(vertical = 12.dp, horizontal = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center,
-    ) {
-        Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(18.dp))
-        Spacer(Modifier.size(6.dp))
-        Text(label, style = MaterialTheme.typography.labelLarge, color = iconColor, fontWeight = FontWeight.SemiBold)
-    }
-}
-
-// =================================================================
 // SUB RISK CARD
 // =================================================================
 
@@ -734,7 +647,7 @@ private fun SubRiskCard(icon: ImageVector, iconColor: Color, iconBg: Color, labe
  * device clock — real, not fabricated — never from a guessed farm condition.
  */
 @Composable
-private fun HomeGreetingHeader(uiState: DashboardUiState, strings: AppStrings) {
+private fun HomeGreetingHeader(uiState: DashboardUiState, strings: AppStrings, modifier: Modifier = Modifier) {
     val profile = uiState.profile
     val name = profile?.name?.trim()?.substringBefore(" ")?.takeIf { it.isNotBlank() }
     val greeting = name?.let { String.format(greetingTemplateFor(strings), it) } ?: strings.dashboardGreeting
@@ -743,7 +656,7 @@ private fun HomeGreetingHeader(uiState: DashboardUiState, strings: AppStrings) {
     }?.takeIf { it.isNotBlank() } ?: profile?.location
     val initial = (profile?.name?.trim()?.firstOrNull() ?: 'K').uppercaseChar()
 
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.weight(1f)) {
             Text(greeting, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
             if (!location.isNullOrBlank()) {
@@ -770,10 +683,10 @@ private fun HomeGreetingHeader(uiState: DashboardUiState, strings: AppStrings) {
             }
         }
         Box(
-            modifier = Modifier.size(48.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
+            modifier = Modifier.size(48.dp).clip(CircleShape).background(Brush.linearGradient(listOf(KrishiTheme.colors.heroStart, KrishiTheme.colors.heroEnd))),
             contentAlignment = Alignment.Center,
         ) {
-            Text(initial.toString(), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            Text(initial.toString(), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = KrishiTheme.colors.lime)
         }
     }
 }
@@ -815,34 +728,36 @@ private fun irrigationLabel(method: com.krishinirnay.core.data.model.IrrigationM
  * buckets (kept simple per the farmer-first UI principle) while still
  * recording a real FeedbackResult value, never a fabricated one.
  */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
-private fun FeedbackWidget(strings: AppStrings, viewModel: FeedbackViewModel = hiltViewModel()) {
-    var action by remember { mutableStateOf<FeedbackAction?>(null) }
-    var submitted by remember { mutableStateOf(false) }
-
+private fun FeedbackWidget(
+    strings: AppStrings,
+    action: FeedbackAction?,
+    onAction: (FeedbackAction) -> Unit,
+    submitted: Boolean,
+    onSubmitted: () -> Unit,
+    viewModel: FeedbackViewModel = hiltViewModel(),
+) {
     if (submitted) {
-        Text(strings.feedbackThanks, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+        Text(strings.feedbackThanks, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
         return
     }
-
-    Spacer(Modifier.size(8.dp))
     Text(
         text = if (action == null) strings.feedbackDidYouFollow else strings.feedbackWhatHappened,
-        style = MaterialTheme.typography.labelSmall,
+        style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
-    Spacer(Modifier.size(6.dp))
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Spacer(Modifier.size(8.dp))
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         if (action == null) {
-            FeedbackChip(strings.feedbackYes) { action = FeedbackAction.YES }
-            FeedbackChip(strings.feedbackNo) { action = FeedbackAction.NO }
-            FeedbackChip(strings.feedbackPartially) { action = FeedbackAction.PARTIALLY }
+            FeedbackChip(strings.feedbackYes) { onAction(FeedbackAction.YES) }
+            FeedbackChip(strings.feedbackNo) { onAction(FeedbackAction.NO) }
+            FeedbackChip(strings.feedbackPartially) { onAction(FeedbackAction.PARTIALLY) }
         } else {
-            val chosenAction = action!!
-            FeedbackChip(strings.feedbackResultImproved) { viewModel.submit(chosenAction, FeedbackResult.CROP_IMPROVED); submitted = true }
-            FeedbackChip(strings.feedbackResultNoChange) { viewModel.submit(chosenAction, FeedbackResult.NO_CHANGE); submitted = true }
-            FeedbackChip(strings.feedbackResultWorse) { viewModel.submit(chosenAction, FeedbackResult.CROP_WORSE); submitted = true }
-            FeedbackChip(strings.feedbackResultOther) { viewModel.submit(chosenAction, FeedbackResult.OTHER); submitted = true }
+            FeedbackChip(strings.feedbackResultImproved) { viewModel.submit(action, FeedbackResult.CROP_IMPROVED); onSubmitted() }
+            FeedbackChip(strings.feedbackResultNoChange) { viewModel.submit(action, FeedbackResult.NO_CHANGE); onSubmitted() }
+            FeedbackChip(strings.feedbackResultWorse) { viewModel.submit(action, FeedbackResult.CROP_WORSE); onSubmitted() }
+            FeedbackChip(strings.feedbackResultOther) { viewModel.submit(action, FeedbackResult.OTHER); onSubmitted() }
         }
     }
 }
@@ -853,8 +768,8 @@ private fun FeedbackChip(label: String, onClick: () -> Unit) {
         modifier = Modifier
             .clip(RoundedCornerShape(50))
             .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            .pressClickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 8.dp),
     ) {
         Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
     }

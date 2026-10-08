@@ -1,5 +1,7 @@
 package com.krishinirnay.feature.dashboard
 
+import com.krishinirnay.core.data.repository.SettingsRepository
+import com.krishinirnay.core.voice.TextToSpeechManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.krishinirnay.core.data.model.DataSourceStatus
@@ -31,6 +33,8 @@ class DashboardViewModel @Inject constructor(
     private val riskRepository: RiskRepository,
     private val weatherRepository: WeatherRepository,
     private val marketRepository: MarketRepository,
+    private val textToSpeechManager: TextToSpeechManager,
+    private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
     private val apiRisk = MutableStateFlow<Int?>(null)
@@ -76,6 +80,21 @@ class DashboardViewModel @Inject constructor(
      * refresh so the result still lands in the single shared WeatherState — the
      * screen never fetches on its own.
      */
+    /** Reads today's decision aloud in the farmer's chosen language (hero card's Listen button). */
+    fun speakDecision(text: String) {
+        val tag = when (settingsRepository.language.value) {
+            "hi" -> "hi-IN"
+            "mr" -> "mr-IN"
+            else -> "en-IN"
+        }
+        textToSpeechManager.speak(text, languageTag = tag)
+    }
+
+    override fun onCleared() {
+        textToSpeechManager.stop()
+        super.onCleared()
+    }
+
     fun retryWeather() {
         viewModelScope.launch { weatherRepository.refresh() }
     }
