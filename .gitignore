@@ -49,3 +49,5 @@ server/models/on_device/*.task
 /*_ui*.xml
 server/*.png
 nul
+
+.superpowers/
